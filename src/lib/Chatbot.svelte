@@ -1,14 +1,14 @@
 <script lang="ts">
   import type { MessageEntity } from "../domain/entities/message";
-  import type { PromptEntity } from "../domain/entities/prompt";
   import Displayer from "../atoms/Diplayer.svelte";
   import { onMount } from "svelte";
   import { OpenRouterAI } from "../infra/ai/openRouter";
-  import PROMPT from "../../data/prompts.json";
+  import { promptStore } from "./store";
 
-  let prompts: PromptEntity[] = PROMPT;
+  $: prompts = $promptStore;
 
-  let promptSystem: string = prompts[0].prompt;
+  let promptSystem = "";
+
   let history: MessageEntity[] = [];
   let input: string = "";
   let loading: boolean = false;
@@ -48,6 +48,9 @@
   };
 
   onMount(() => {
+    try {
+      promptSystem = prompts[0].text;
+    } catch (err) {}
     // Scroll to the bottom of the chat when new messages are added
     const chatContainer = document.getElementById("chat-container");
     if (chatContainer) {
@@ -56,10 +59,9 @@
   });
 </script>
 
-<h1 class="text-3xl font-bold mb-4 text-green-800">Nerd-Bot</h1>
 <div
   id="chat-container"
-  class="h-full w-full overflow-y-auto border border-gray-600 rounded-lg p-4 mb-4 shadow-lg bg-gray-900 text-green-400"
+  class="h-full w-full overflow-y-auto border border-green-600 rounded-lg p-4 mb-4 shadow-lg bg-green-900 text-green-300 font-mono"
 >
   {#each history as message}
     <Displayer {message} />
@@ -74,17 +76,17 @@
   <input
     bind:value={input}
     placeholder="Type your message..."
-    class="border border-gray-600 p-3 w-full rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-800 text-green-400"
+    class="border border-green-600 p-3 w-full rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono text-white"
     on:keydown={(e) => {
       if (e.key === "Enter") sendMessage();
     }}
   />
   <select
     bind:value={promptSystem}
-    class="border border-gray-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-800 text-green-400"
+    class="border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono"
   >
     {#each prompts as prompt}
-      <option value={prompt.prompt}>{prompt.title}</option>
+      <option value={prompt.text}>{prompt.title}</option>
     {/each}
   </select>
 </div>
@@ -92,7 +94,7 @@
 <div class="flex flex-row justify-center w-full gap-2">
   <button
     on:click={sendMessage}
-    class="flex items-center justify-center w-9/10 bg-green-800 text-gray-100 p-3 rounded-lg shadow-md hover:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 border border-gray-600"
+    class="flex items-center justify-center w-9/10 bg-green-700 text-gray-100 p-3 rounded-lg shadow-md hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 border border-green-600 font-mono"
   >
     <svg
       class="w-6 h-6 mr-2"
@@ -115,7 +117,7 @@
     on:click={() => {
       history = [];
     }}
-    class="bg-red-900 text-gray-100 p-3 rounded-lg shadow-md hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 border border-gray-600 flex justify-center items-center"
+    class="bg-red-800 text-gray-100 p-3 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 border border-red-600 flex justify-center items-center font-mono"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -129,6 +131,6 @@
         clip-rule="evenodd"
       />
     </svg>
-    clear
+    Clear
   </button>
 </div>
