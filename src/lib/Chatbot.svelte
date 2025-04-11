@@ -8,6 +8,8 @@
   $: prompts = $promptStore;
 
   let promptSystem = "";
+  let model = "meta-llama/llama-4-maverick:free";
+  let models: string[] = [];
 
   let history: MessageEntity[] = [];
   let input: string = "";
@@ -33,6 +35,7 @@
     const response = await ai.chat({
       text,
       history: [{ sender: "system", text: promptSystem }, ...history],
+      model,
     });
 
     // Add AI response to the chat
@@ -47,9 +50,11 @@
     loading = false;
   };
 
-  onMount(() => {
+  onMount(async () => {
     try {
       promptSystem = prompts[0].text;
+      models = await ai.models();
+      console.log(models);
     } catch (err) {}
     // Scroll to the bottom of the chat when new messages are added
     const chatContainer = document.getElementById("chat-container");
@@ -73,22 +78,32 @@
   {/if}
 </div>
 <div class="flex flex-row w-full gap-2 mb-4">
-  <input
+  <textarea
     bind:value={input}
     placeholder="Type your message..."
-    class="border border-green-600 p-3 w-full rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono text-white"
+    class="border border-green-600 p-3 w-3/4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono text-white"
     on:keydown={(e) => {
       if (e.key === "Enter") sendMessage();
     }}
-  />
-  <select
-    bind:value={promptSystem}
-    class="border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono"
-  >
-    {#each prompts as prompt}
-      <option value={prompt.text}>{prompt.title}</option>
-    {/each}
-  </select>
+  ></textarea>
+  <div class="flex flex-col gap-2">
+    <select
+      bind:value={model}
+      class="border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono"
+    >
+      {#each models as model}
+        <option value={model}>{model}</option>
+      {/each}
+    </select>
+    <select
+      bind:value={promptSystem}
+      class="border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono"
+    >
+      {#each prompts as prompt}
+        <option value={prompt.text}>{prompt.title}</option>
+      {/each}
+    </select>
+  </div>
 </div>
 
 <div class="flex flex-row justify-center w-full gap-2">

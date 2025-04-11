@@ -18,16 +18,17 @@
     on:click={toogleModal}
   >
     <div
-      class=" p-2 rounded-lg shadow-lg max-w-full h-1/2 relative"
+      class=" p-2 rounded-lg shadow-lg max-w-full h-2/3 relative"
       on:click|stopPropagation
     >
-      <button
-        class="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
-        on:click={toogleModal}
+      <slot
+        ><button
+          class="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
+          on:click={toogleModal}
+        >
+          ×
+        </button></slot
       >
-        ×
-      </button>
-      <slot></slot>
     </div>
   </div>
 {/if}

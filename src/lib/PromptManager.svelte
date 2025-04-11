@@ -58,19 +58,17 @@
   }
 </script>
 
-<div
-  class="container w-fit h-full overflow-hidden text-white mx-auto font-mono"
->
-  <button
-    on:click={togglePage}
-    class=" p-2 bg-blue-600 text-white shadow-sm hover:bg-blue-700 border border-blue-700"
-  >
-    Toggle to {!showPromptList ? "Form" : "List"}
-  </button>
-  {#if showPromptList}
-    <div
-      class="bg-green-800 p-4 w-fit h-fit rounded-md shadow-md border border-green-600"
+<div class="container w-fit h-full text-white font-mono">
+  <div class="flex flex-row justify-center">
+    <button
+      on:click={togglePage}
+      class=" p-2 bg-green-800 text-white shadow-sm hover:bg-green-900 border border-green-700"
     >
+      Toggle to {!showPromptList ? "Form" : "List"}
+    </button>
+  </div>
+  {#if showPromptList}
+    <div class="p-4 w-fit h-full rounded-md shadow-md">
       <h1 class="text-2xl font-bold mb-4 border-b border-green-600 pb-2">
         Prompt Manager
       </h1>
@@ -126,9 +124,7 @@
       </div>
     </div>
   {:else}
-    <div
-      class="bg-green-800 h-full overflow-hidden text-white p-4 rounded-md shadow-md border border-green-600"
-    >
+    <div class="h-full text-white p-4 rounded-md shadow-md">
       <h2 class="text-xl font-semibold mb-4 border-b border-green-600 pb-2">
         Prompts List
       </h2>

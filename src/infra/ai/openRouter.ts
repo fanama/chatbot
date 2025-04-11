@@ -42,4 +42,18 @@ export class OpenRouterAI {
       return "error";
     }
   }
+
+  async models() {
+    try {
+      const response = await axios.get("https://openrouter.ai/api/v1/models");
+      const models = response.data.data;
+      console.log({ models });
+      return models
+        .map((m: any) => m.id)
+        .filter((m: string) => m.includes("free"));
+    } catch (err) {
+      console.log({ err });
+      return [];
+    }
+  }
 }
