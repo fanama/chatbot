@@ -4,19 +4,26 @@
   import { onMount } from "svelte";
   import { OpenRouterAI } from "../infra/ai/openRouter";
   import { promptStore } from "./store";
+  import { LocalStorage } from "../infra/storage/localStorage";
+
+  const historyStorage = new LocalStorage<MessageEntity>("history", []);
 
   $: prompts = $promptStore;
 
   let promptSystem = "";
-  let model = "meta-llama/llama-4-maverick:free";
+  let model = "google/gemma-3-12b-it:free";
   let models: string[] = [];
 
-  let history: MessageEntity[] = [];
+  let history: MessageEntity[] = historyStorage.getAll();
   let input: string = "";
   let loading: boolean = false;
 
   // const ai = new GoogleAI();
   const ai = new OpenRouterAI();
+
+  $: if (history) {
+    historyStorage.save(history);
+  }
 
   const sendMessage = async () => {
     if (input.trim() === "") return;
@@ -46,6 +53,7 @@
         text: response,
       },
     ];
+
     // Set loading state to false
     loading = false;
   };
@@ -54,7 +62,6 @@
     try {
       promptSystem = prompts[0].text;
       models = await ai.models();
-      console.log(models);
     } catch (err) {}
     // Scroll to the bottom of the chat when new messages are added
     const chatContainer = document.getElementById("chat-container");
@@ -86,10 +93,10 @@
       if (e.key === "Enter") sendMessage();
     }}
   ></textarea>
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-2 w-1/3">
     <select
       bind:value={model}
-      class="border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono"
+      class="w-full border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono"
     >
       {#each models as model}
         <option value={model}>{model}</option>
@@ -97,7 +104,7 @@
     </select>
     <select
       bind:value={promptSystem}
-      class="border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono"
+      class="w-full border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono"
     >
       {#each prompts as prompt}
         <option value={prompt.text}>{prompt.title}</option>
