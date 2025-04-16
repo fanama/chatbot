@@ -11,7 +11,7 @@
   $: prompts = $promptStore;
 
   let promptSystem = "";
-  let model = "google/gemma-3-12b-it:free";
+  let model = "google/gemma-3-17b-it:free";
   let models: string[] = [];
 
   let history: MessageEntity[] = historyStorage.getAll();

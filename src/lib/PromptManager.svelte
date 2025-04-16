@@ -11,23 +11,23 @@
   let text = "";
   let showPromptList = false;
 
+  let prompts = promptStorage.getAll();
+
   // Function to add or update a prompt
   function savePrompt() {
     if (currentPrompt) {
       // Update existing prompt
-      const newPrompt = $promptStore.map((prompt) =>
+      prompts = $promptStore.map((prompt) =>
         prompt === currentPrompt
           ? { ...prompt, title, subtitle, text }
           : prompt,
       );
-      promptStore.set(newPrompt);
-      promptStorage.save(newPrompt);
     } else {
       // Add new prompt
-      promptStore.set([...$promptStore, { title, subtitle, text }]);
-      promptStorage.add({ title, subtitle, text });
+      prompts = [...prompts, { title, subtitle, text }];
     }
     resetForm();
+    togglePage();
   }
 
   // Function to edit a prompt
@@ -36,6 +36,7 @@
     title = prompt.title;
     subtitle = prompt.subtitle;
     text = prompt.text;
+    togglePage();
   }
 
   // Function to reset the form
@@ -48,80 +49,77 @@
 
   // Function to remove a prompt
   function removePrompt(prompt: PromptEntity) {
-    const newPrompt = $promptStore.filter((p) => p !== prompt);
-    promptStore.set(newPrompt);
-    promptStorage.save(newPrompt);
+    prompts = $promptStore.filter((p) => p !== prompt);
   }
 
   function togglePage() {
     showPromptList = !showPromptList;
   }
+
+  $: if (prompts) {
+    promptStorage.save(prompts);
+    promptStore.set(prompts);
+  }
 </script>
 
-<div class="container w-fit h-full text-white font-mono">
+<div class="container w-full h-full text-white font-mono">
   <div class="flex flex-row justify-center">
     <button
       on:click={togglePage}
-      class=" p-2 bg-green-800 text-white shadow-sm hover:bg-green-900 border border-green-700"
+      class=" p-2 bg-green-800 text-white hover:bg-green-900 border border-green-700"
     >
       Toggle to {!showPromptList ? "Form" : "List"}
     </button>
   </div>
   {#if showPromptList}
-    <div class="p-4 w-fit h-full rounded-md shadow-md">
+    <div
+      class="p-4 w-full h-full rounded-md flex flex-col justify-between text-center"
+    >
       <h1 class="text-2xl font-bold mb-4 border-b border-green-600 pb-2">
         Prompt Manager
       </h1>
 
-      <div class="mb-4">
-        <label for="title" class="block text-sm font-medium text-green-300"
-          >Title</label
-        >
-        <input
-          id="title"
-          type="text"
-          bind:value={title}
-          class="mt-1 p-2 w-full border border-green-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-900 text-green-300"
-        />
-      </div>
+      <label for="title" class="block text-sm font-medium text-green-300"
+        >Title</label
+      >
+      <input
+        id="title"
+        type="text"
+        bind:value={title}
+        class="mt-1 p-2 w-full border border-green-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-900 text-green-300"
+      />
 
-      <div class="mb-4">
-        <label for="subtitle" class="block text-sm font-medium text-green-300"
-          >Subtitle</label
-        >
-        <input
-          id="subtitle"
-          type="text"
-          bind:value={subtitle}
-          class="mt-1 p-2 w-full border border-green-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-900 text-green-300"
-        />
-      </div>
+      <label for="subtitle" class="block text-sm font-medium text-green-300"
+        >Subtitle</label
+      >
+      <input
+        id="subtitle"
+        type="text"
+        bind:value={subtitle}
+        class="mt-1 p-2 w-full border border-green-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-900 text-green-300"
+      />
 
-      <div class="mb-4">
-        <label for="text" class="block text-sm font-medium text-green-300"
-          >Text</label
-        >
-        <textarea
-          id="text"
-          bind:value={text}
-          class="mt-1 p-2 w-full border border-green-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-900 text-green-300"
-        ></textarea>
-      </div>
+      <label for="text" class="block text-sm font-medium text-green-300"
+        >Text</label
+      >
+      <textarea
+        id="text"
+        bind:value={text}
+        class="mt-1 p-2 w-full border border-green-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-900 text-green-300"
+      ></textarea>
 
-      <div class="flex justify-between">
-        <button
-          on:click={savePrompt}
-          class="px-4 py-2 bg-green-600 text-white rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 border border-green-700"
-        >
-          {currentPrompt ? "Update" : "Create"} Prompt
-        </button>
-        <button
-          on:click={resetForm}
-          class="px-4 py-2 bg-gray-700 text-white rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 border border-gray-800"
-        >
-          Reset
-        </button>
-      </div>
+      <button
+        on:click={savePrompt}
+        class="px-4 py-2 bg-green-600 text-white rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 border border-green-700"
+      >
+        {currentPrompt ? "Update" : "Create"} Prompt
+      </button>
+      <button
+        on:click={resetForm}
+        class="px-4 py-2 bg-gray-700 text-white rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 border border-gray-800"
+      >
+        Reset
+      </button>
     </div>
   {:else}
     <div class="h-full text-white p-4 rounded-md shadow-md">
@@ -131,7 +129,7 @@
       <div class="h-full overflow-y-auto grid grid-cols-2 gap-1">
         {#each $promptStore as prompt}
           <div
-            class="border border-green-600 text-white p-4 rounded-md shadow-sm bg-green-900"
+            class="border border-green-600 text-white p-4 rounded-md shadow-sm bg-green-900 h-full overflow-y-auto"
           >
             <h3 class="text-lg font-semibold text-green-300">{prompt.title}</h3>
             <h4 class="text-md text-gray-400">{prompt.subtitle}</h4>
