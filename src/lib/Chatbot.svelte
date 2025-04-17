@@ -3,6 +3,7 @@
   import Displayer from "../atoms/Diplayer.svelte";
   import { onMount } from "svelte";
   import { OpenRouterAI } from "../infra/ai/openRouter";
+  import { AIProvider } from "../infra/ai/aiProvider";
   import { promptStore } from "./store";
   import { LocalStorage } from "../infra/storage/localStorage";
 
@@ -11,15 +12,14 @@
   $: prompts = $promptStore;
 
   let promptSystem = "";
-  let model = "google/gemma-3-17b-it:free";
+  let model = "mistralai/mistral-small-3.1-24b-instruct:free";
   let models: string[] = [];
 
   let history: MessageEntity[] = historyStorage.getAll();
   let input: string = "";
   let loading: boolean = false;
 
-  // const ai = new GoogleAI();
-  const ai = new OpenRouterAI();
+  const ai = new AIProvider();
 
   $: if (history) {
     historyStorage.save(history);
@@ -61,7 +61,9 @@
   onMount(async () => {
     try {
       promptSystem = prompts[0].text;
-      models = await ai.models();
+      const modelManager = new OpenRouterAI();
+      models = await modelManager.models();
+      model = models[0];
     } catch (err) {}
     // Scroll to the bottom of the chat when new messages are added
     const chatContainer = document.getElementById("chat-container");

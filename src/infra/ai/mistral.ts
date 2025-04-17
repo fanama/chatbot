@@ -1,19 +1,19 @@
 import axios from "axios";
 import type { Input } from "../../domain/entities/message";
 
-export class OpenRouterAI {
-  name = "openRouter";
+export class MistralAI {
+  name = "mistral";
 
   async chat({
     text,
     history = [],
-    model = "meta-llama/llama-4-maverick:free",
+    model = "mistral-small-latest",
   }: Input): Promise<string> {
     try {
       const response = await axios.post(
-        "https://openrouter.ai/api/v1/chat/completions",
+        "https://api.mistral.ai/v1/chat/completions",
         {
-          model,
+          model: "mistral-small-latest",
           messages: [
             ...history.map((message) => {
               return { role: message.sender, content: message.text };
@@ -27,7 +27,8 @@ export class OpenRouterAI {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_OPEN_ROUTER_KEY}`,
+            Accept: "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_MISTRAL_API_KEY}`,
           },
         },
       );
@@ -38,21 +39,6 @@ export class OpenRouterAI {
       throw new Error(
         `Provider ${this.name}/${model} returned an empty response.`,
       );
-    }
-  }
-
-  async models() {
-    try {
-      const response = await axios.get("https://openrouter.ai/api/v1/models");
-      const models = response.data.data;
-      console.log({ models });
-      return models
-        .map((m: any) => m.id)
-        .filter((m: string) => m.includes("free"))
-        .filter((m: string) => m.includes("google"));
-    } catch (err) {
-      console.log({ err });
-      return [];
     }
   }
 }

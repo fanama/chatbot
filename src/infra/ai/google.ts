@@ -1,25 +1,23 @@
 import axios from "axios";
-import type { MessageEntity } from "../../domain/entities/message";
-
-interface Props {
-  text: string;
-  history?: MessageEntity[];
-  model?: string;
-}
+import type { Input } from "../../domain/entities/message";
 
 export class GoogleAI {
+  name = "google";
   async chat({
     text,
     history = [],
     model = "gemini-2.0-flash",
-  }: Props): Promise<string> {
+  }: Input): Promise<string> {
     try {
       const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${import.meta.env.VITE_GOOGLE_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GOOGLE_API_KEY}`,
         {
           contents: [
             history.map((message) => {
-              return { role: message.sender, parts: [{ text: message.text }] };
+              return {
+                role: message.sender !== "user" ? "model" : message.sender,
+                parts: [{ text: message.text }],
+              };
             }),
             {
               role: "user",
@@ -36,8 +34,10 @@ export class GoogleAI {
 
       return response.data.candidates[0].content.parts[0].text;
     } catch (err) {
-      console.error(err);
-      return "error";
+      console.error(err, model);
+      throw new Error(
+        `Provider ${this.name}/${model} returned an empty response.`,
+      );
     }
   }
 }
