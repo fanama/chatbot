@@ -48,8 +48,7 @@ export class OpenRouterAI {
       console.log({ models });
       return models
         .map((m: any) => m.id)
-        .filter((m: string) => m.includes("free"))
-        .filter((m: string) => m.includes("google"));
+        .filter((m: string) => m.includes("free"));
     } catch (err) {
       console.log({ err });
       return [];
