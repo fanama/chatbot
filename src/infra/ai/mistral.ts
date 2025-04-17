@@ -28,7 +28,7 @@ export class MistralAI {
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_MISTRAL_API_KEY}`,
+            Authorization: `Bearer ${import.meta.env.VITE_MISTRAL_KEY}`,
           },
         },
       );
