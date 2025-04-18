@@ -76,7 +76,7 @@
 
 <div
   bind:this={messageContainer}
-  class="h-full w-full overflow-y-auto border border-green-600 rounded-lg p-4 mb-4 shadow-lg bg-green-900 text-green-300 font-mono"
+  class="h-full w-full overflow-y-auto border-b border-t border-green-600 rounded-lg p-4 mb-4 shadow-lg bg-green-800 text-green-200 font-mono"
 >
   {#each history as message}
     <Displayer {message} />
@@ -91,15 +91,19 @@
   <textarea
     bind:value={input}
     placeholder="Type your message..."
-    class="border border-green-600 p-3 w-3/4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono text-white"
+    class="border border-green-600 p-3 w-3/4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-700 text-green-200 font-mono"
     on:keydown={(e) => {
-      if (e.key === "Enter") sendMessage();
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault(); // Empêche le comportement par défaut (aller à la ligne)
+        sendMessage();
+      }
     }}
   ></textarea>
+
   <div class="flex flex-col gap-2 w-1/3">
     <select
       bind:value={promptSystem}
-      class="w-full h-full border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono"
+      class="w-full h-full border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-700 text-green-200 font-mono"
     >
       {#each prompts as prompt}
         <option value={prompt.text}>{prompt.title}</option>
@@ -111,7 +115,7 @@
 <div class="flex flex-row justify-center w-full gap-2">
   <button
     on:click={sendMessage}
-    class="flex items-center justify-center w-9/10 bg-green-700 text-gray-100 p-3 rounded-lg shadow-md hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 border border-green-600 font-mono"
+    class="flex items-center cursor-pointer justify-center w-9/10 bg-green-600 text-gray-100 p-3 rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 border border-green-600 font-mono"
   >
     <svg
       class="w-6 h-6 mr-2"
@@ -134,7 +138,7 @@
     on:click={() => {
       history = [];
     }}
-    class="bg-red-800 text-gray-100 p-3 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 border border-red-600 flex justify-center items-center font-mono"
+    class="bg-red-700 cursor-pointer text-gray-100 p-3 rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 border border-red-600 flex justify-center items-center font-mono"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"

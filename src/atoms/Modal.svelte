@@ -14,7 +14,7 @@
 
 {#if isOpen}
   <div
-    class="fixed inset-0 flex h-max-screen items-center justify-center z-50 bg-black backdrop"
+    class="fixed inset-0 flex h-max-screen items-center justify-center backdrop"
     on:click={toogleModal}
   >
     <div

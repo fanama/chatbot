@@ -17,7 +17,7 @@
   function savePrompt() {
     if (currentPrompt) {
       // Update existing prompt
-      prompts = $promptStore.map((prompt) =>
+      prompts = prompts.map((prompt) =>
         prompt === currentPrompt
           ? { ...prompt, title, subtitle, text }
           : prompt,
@@ -49,7 +49,7 @@
 
   // Function to remove a prompt
   function removePrompt(prompt: PromptEntity) {
-    prompts = $promptStore.filter((p) => p !== prompt);
+    prompts = prompts.filter((p) => p !== prompt);
   }
 
   function togglePage() {
@@ -62,88 +62,88 @@
   }
 </script>
 
-<div class="container w-full h-full text-white font-mono">
+<div
+  class="w-full h-full text-white border-l border-r border-green-600 font-mono flex flex-col"
+>
   <div class="flex flex-row justify-center">
     <button
       on:click={togglePage}
-      class=" p-2 bg-green-800 text-white hover:bg-green-900 border border-green-700"
+      class="p-2 bg-green-700 text-white hover:bg-green-800 border border-green-600"
     >
       Toggle to {!showPromptList ? "Form" : "List"}
     </button>
   </div>
   {#if showPromptList}
-    <div
-      class="p-4 w-full h-full rounded-md flex flex-col justify-between text-center"
-    >
+    <div id="editor" class="p-4 w-full flex-grow flex flex-col">
       <h1 class="text-2xl font-bold mb-4 border-b border-green-600 pb-2">
         Prompt Manager
       </h1>
 
-      <label for="title" class="block text-sm font-medium text-green-300"
-        >Title</label
-      >
+      <label for="title" class="block text-sm font-medium text-green-200">
+        Title
+      </label>
       <input
         id="title"
         type="text"
         bind:value={title}
-        class="mt-1 p-2 w-full border border-green-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-900 text-green-300"
+        class="mt-1 p-2 w-full rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-800 text-green-200"
       />
 
-      <label for="subtitle" class="block text-sm font-medium text-green-300"
-        >Subtitle</label
-      >
+      <label for="subtitle" class="block text-sm font-medium text-green-200">
+        Subtitle
+      </label>
       <input
         id="subtitle"
         type="text"
         bind:value={subtitle}
-        class="mt-1 p-2 w-full border border-green-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-900 text-green-300"
+        class="mt-1 p-2 w-full rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-800 text-green-200"
       />
 
-      <label for="text" class="block text-sm font-medium text-green-300"
-        >Text</label
-      >
+      <label for="text" class="block text-sm font-medium text-green-200">
+        Text
+      </label>
       <textarea
         id="text"
         bind:value={text}
-        class="mt-1 p-2 w-full border border-green-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-900 text-green-300"
+        class="mt-1 p-2 w-full h-40 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-800 text-green-200"
       ></textarea>
 
-      <button
-        on:click={savePrompt}
-        class="px-4 py-2 bg-green-600 text-white rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 border border-green-700"
-      >
-        {currentPrompt ? "Update" : "Create"} Prompt
-      </button>
-      <button
-        on:click={resetForm}
-        class="px-4 py-2 bg-gray-700 text-white rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 border border-gray-800"
-      >
-        Reset
-      </button>
+      <div class="flex flex-row gap-2 mt-4">
+        <button
+          on:click={savePrompt}
+          class="px-4 py-2 bg-green-600 text-white rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 border border-green-600"
+        >
+          {currentPrompt ? "Update" : "Create"} Prompt
+        </button>
+        <button
+          on:click={resetForm}
+          class="px-4 py-2 bg-gray-600 text-white rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 border border-gray-600"
+        >
+          Reset
+        </button>
+      </div>
     </div>
   {:else}
-    <div class="h-full text-white p-4 rounded-md shadow-md">
+    <div class="h-full text-white p-4 rounded-md shadow-md flex-grow">
       <h2 class="text-xl font-semibold mb-4 border-b border-green-600 pb-2">
         Prompts List
       </h2>
       <div class="h-full overflow-y-auto grid grid-cols-2 gap-1">
         {#each $promptStore as prompt}
-          <div
-            class="border border-green-600 text-white p-4 rounded-md shadow-sm bg-green-900 h-full overflow-y-auto"
-          >
-            <h3 class="text-lg font-semibold text-green-300">{prompt.title}</h3>
+          <div class=" text-white p-4 rounded-md shadow-sm bg-green-800 h-full">
+            <h3 class="text-lg font-semibold text-green-200">{prompt.title}</h3>
             <h4 class="text-md text-gray-400">{prompt.subtitle}</h4>
-            <p class="text-gray-300">{prompt.text}</p>
-            <div class="mt-2 flex flex-row justify-between">
+
+            <div class="mt-2 flex flex-row justify-center gap-4">
               <button
                 on:click={() => editPrompt(prompt)}
-                class="px-3 py-1 bg-blue-700 text-white rounded-md shadow-sm hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 border border-blue-800"
+                class="px-3 py-1 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 border border-blue-600"
               >
                 Edit
               </button>
               <button
                 on:click={() => removePrompt(prompt)}
-                class="flex flex-row px-3 py-1 bg-red-700 text-white rounded-md shadow-sm hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 border border-red-800"
+                class="flex flex-row px-3 py-1 bg-red-600 text-white rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 border border-red-600"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

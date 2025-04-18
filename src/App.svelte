@@ -4,14 +4,16 @@
   import PromptManager from "./lib/PromptManager.svelte";
 </script>
 
-<main class="h-screen bg-black flex flex-col items-center justify-center p-4">
+<main
+  class="h-screen bg-green-800 flex flex-col items-center justify-center p-4"
+>
   <h1
-    class="text-3xl font-bold mb-4 text-green-400 bg-green-800 w-full text-center border border-green-600 rounded-lg"
+    class="text-3xl font-bold mb-4 text-green-300 bg-green-700 w-full text-center border border-green-600 rounded-lg"
   >
     Nerd-Bot
   </h1>
   <div class="flex flex-row p-1">
-    <Modal className="bg-green-800 text-white " title="useCases"
+    <Modal className="bg-green-600 text-white " title="useCases"
       ><PromptManager /></Modal
     >
   </div>
