@@ -2,7 +2,6 @@
   import type { MessageEntity } from "../domain/entities/message";
   import Displayer from "../atoms/Diplayer.svelte";
   import { onMount } from "svelte";
-  import { OpenRouterAI } from "../infra/ai/openRouter";
   import { AIProvider } from "../infra/ai/aiProvider";
   import { promptStore } from "./store";
   import { LocalStorage } from "../infra/storage/localStorage";
@@ -12,17 +11,27 @@
   $: prompts = $promptStore;
 
   let promptSystem = "";
-  let model = "mistralai/mistral-small-3.1-24b-instruct:free";
-  let models: string[] = [];
 
   let history: MessageEntity[] = historyStorage.getAll();
   let input: string = "";
   let loading: boolean = false;
 
+  let messageContainer: HTMLDivElement;
+
   const ai = new AIProvider();
+
+  function scrollBottom() {
+    if (messageContainer) {
+      messageContainer.scrollTo({
+        top: messageContainer.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }
 
   $: if (history) {
     historyStorage.save(history);
+    setTimeout(scrollBottom, 0);
   }
 
   const sendMessage = async () => {
@@ -42,7 +51,6 @@
     const response = await ai.chat({
       text,
       history: [{ sender: "system", text: promptSystem }, ...history],
-      model,
     });
 
     // Add AI response to the chat
@@ -50,7 +58,8 @@
       ...history,
       {
         sender: "model",
-        text: response,
+        text: response.text,
+        provider: response.provider,
       },
     ];
 
@@ -61,20 +70,12 @@
   onMount(async () => {
     try {
       promptSystem = prompts[0].text;
-      const modelManager = new OpenRouterAI();
-      models = await modelManager.models();
-      model = models[0];
     } catch (err) {}
-    // Scroll to the bottom of the chat when new messages are added
-    const chatContainer = document.getElementById("chat-container");
-    if (chatContainer) {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
   });
 </script>
 
 <div
-  id="chat-container"
+  bind:this={messageContainer}
   class="h-full w-full overflow-y-auto border border-green-600 rounded-lg p-4 mb-4 shadow-lg bg-green-900 text-green-300 font-mono"
 >
   {#each history as message}
@@ -97,16 +98,8 @@
   ></textarea>
   <div class="flex flex-col gap-2 w-1/3">
     <select
-      bind:value={model}
-      class="w-full border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono"
-    >
-      {#each models as model}
-        <option value={model}>{model}</option>
-      {/each}
-    </select>
-    <select
       bind:value={promptSystem}
-      class="w-full border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono"
+      class="w-full h-full border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-800 text-green-300 font-mono"
     >
       {#each prompts as prompt}
         <option value={prompt.text}>{prompt.title}</option>

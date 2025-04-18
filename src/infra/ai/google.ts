@@ -1,14 +1,15 @@
 import axios from "axios";
-import type { Input } from "../../domain/entities/message";
+import type { Input, Response } from "../../domain/entities/message";
 
 export class GoogleAI {
   name = "google";
   async chat({
     text,
     history = [],
-    model = "gemini-2.0-flash",
-  }: Input): Promise<string> {
+    model = "gemini-2.0-flash:generateContent",
+  }: Input): Promise<Response> {
     try {
+      console.log("google", model);
       const response = await axios.post(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GOOGLE_KEY}`,
         {
@@ -32,7 +33,10 @@ export class GoogleAI {
         },
       );
 
-      return response.data.candidates[0].content.parts[0].text;
+      return {
+        text: response.data.candidates[0].content.parts[0].text,
+        provider: this.name,
+      };
     } catch (err) {
       console.error(err, model);
       throw new Error(

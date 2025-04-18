@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Input } from "../../domain/entities/message";
+import type { Input, Response } from "../../domain/entities/message";
 
 export class MistralAI {
   name = "mistral";
@@ -8,15 +8,19 @@ export class MistralAI {
     text,
     history = [],
     model = "mistral-small-latest",
-  }: Input): Promise<string> {
+  }: Input): Promise<Response> {
     try {
+      console.log("mistral", model);
       const response = await axios.post(
         "https://api.mistral.ai/v1/chat/completions",
         {
           model: "mistral-small-latest",
           messages: [
             ...history.map((message) => {
-              return { role: message.sender, content: message.text };
+              return {
+                role: message.sender !== "user" ? "assistant" : message.sender,
+                content: message.text,
+              };
             }),
             {
               role: "user",
@@ -32,8 +36,10 @@ export class MistralAI {
           },
         },
       );
-
-      return response.data.choices[0].message.content;
+      return {
+        text: response.data.choices[0].message.content,
+        provider: this.name,
+      };
     } catch (err) {
       console.error(err);
       throw new Error(

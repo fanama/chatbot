@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Input } from "../../domain/entities/message";
+import type { Input, Response } from "../../domain/entities/message";
 
 export class OpenRouterAI {
   name = "openRouter";
@@ -7,9 +7,10 @@ export class OpenRouterAI {
   async chat({
     text,
     history = [],
-    model = "meta-llama/llama-4-maverick:free",
-  }: Input): Promise<string> {
+    model = "google/gemma-3-27b-it:free",
+  }: Input): Promise<Response> {
     try {
+      console.log("openrouter", model);
       const response = await axios.post(
         "https://openrouter.ai/api/v1/chat/completions",
         {
@@ -32,7 +33,10 @@ export class OpenRouterAI {
         },
       );
 
-      return response.data.choices[0].message.content;
+      return {
+        text: response.data.choices[0].message.content,
+        provider: this.name,
+      };
     } catch (err) {
       console.error(err);
       throw new Error(

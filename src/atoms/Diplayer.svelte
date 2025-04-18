@@ -4,20 +4,26 @@
   import clipboard from "../infra/keyboard/clipBoard";
 
   export let message: MessageEntity;
+
+  // Parse markdown content once when the component is created
+  $: parsedContent = marked.parse(message.text);
 </script>
 
 <div
   class={`message flex items-start space-x-4 mb-4 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
 >
   <div
-    class={`${message.sender === "user" ? "bg-green-800 text-white" : "bg-green-800 text-white"} p-4 rounded-lg shadow-md w-fit overflow-scroll border border-green-600`}
+    class={`${message.sender === "user" ? "bg-green-800 text-white" : "bg-green-800 text-white"} p-4 rounded-lg shadow-md w-fit overflow-auto border border-green-600`}
   >
-    {@html marked.parse(message.text)}
-    <div class="text-right p-2">
+    <div class="markdown-content">
+      {@html parsedContent}
+    </div>
+    <div class="flex flex-row gap-2 text-right p-2">
       <button
         on:click={() => clipboard.copy(message.text)}
         type="button"
         class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-500 flex items-center text-xs"
+        aria-label="Copy to clipboard"
         title="Copy to clipboard"
       >
         <svg
@@ -37,6 +43,46 @@
         </svg>
         <span class="ml-1">Copy</span>
       </button>
+      {#if message.provider}
+        <div
+          class="px-2 py-1 bg-green-600 text-white rounded flex items-center text-xs"
+        >
+          <span class="ml-1">{message.provider}</span>
+        </div>
+      {/if}
     </div>
   </div>
 </div>
+
+<style>
+  /* Custom styles for markdown content */
+  .markdown-content h1,
+  .markdown-content h2,
+  .markdown-content h3,
+  .markdown-content h4,
+  .markdown-content h5,
+  .markdown-content h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+  .markdown-content p {
+    margin-bottom: 1em;
+  }
+  .markdown-content code {
+    background-color: #f5f5f5;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+  }
+  .markdown-content pre {
+    background-color: #f5f5f5;
+    padding: 1em;
+    border-radius: 3px;
+    overflow-x: auto;
+  }
+  .markdown-content blockquote {
+    border-left: 4px solid #ccc;
+    padding-left: 1em;
+    margin-left: 0;
+    color: #666;
+  }
+</style>
