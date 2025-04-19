@@ -63,55 +63,55 @@
 </script>
 
 <div
-  class="w-full h-full text-white border-l border-r border-green-600 font-mono flex flex-col"
+  class="w-full h-full text-white border-l border-r border-blue-600 font-mono flex flex-col"
 >
   <div class="flex flex-row justify-center">
     <button
       on:click={togglePage}
-      class="p-2 bg-green-700 text-white hover:bg-green-800 border border-green-600"
+      class="p-2 bg-blue-700 text-white hover:bg-blue-800 border border-blue-600"
     >
       Toggle to {!showPromptList ? "Form" : "List"}
     </button>
   </div>
   {#if showPromptList}
     <div id="editor" class="p-4 w-full flex-grow flex flex-col">
-      <h1 class="text-2xl font-bold mb-4 border-b border-green-600 pb-2">
+      <h1 class="text-2xl font-bold mb-4 border-b border-blue-600 pb-2">
         Prompt Manager
       </h1>
 
-      <label for="title" class="block text-sm font-medium text-green-200">
+      <label for="title" class="block text-sm font-medium text-blue-200">
         Title
       </label>
       <input
         id="title"
         type="text"
         bind:value={title}
-        class="mt-1 p-2 w-full rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-800 text-green-200"
+        class="mt-1 p-2 w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-blue-800 text-blue-200"
       />
 
-      <label for="subtitle" class="block text-sm font-medium text-green-200">
+      <label for="subtitle" class="block text-sm font-medium text-blue-200">
         Subtitle
       </label>
       <input
         id="subtitle"
         type="text"
         bind:value={subtitle}
-        class="mt-1 p-2 w-full rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-800 text-green-200"
+        class="mt-1 p-2 w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-blue-800 text-blue-200"
       />
 
-      <label for="text" class="block text-sm font-medium text-green-200">
+      <label for="text" class="block text-sm font-medium text-blue-200">
         Text
       </label>
       <textarea
         id="text"
         bind:value={text}
-        class="mt-1 p-2 w-full h-40 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm bg-green-800 text-green-200"
+        class="mt-1 p-2 w-full h-40 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-blue-800 text-blue-200"
       ></textarea>
 
       <div class="flex flex-row gap-2 mt-4">
         <button
           on:click={savePrompt}
-          class="px-4 py-2 bg-green-600 text-white rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 border border-green-600"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 border border-blue-600"
         >
           {currentPrompt ? "Update" : "Create"} Prompt
         </button>
@@ -125,14 +125,16 @@
     </div>
   {:else}
     <div class="h-full text-white p-4 rounded-md shadow-md flex-grow">
-      <h2 class="text-xl font-semibold mb-4 border-b border-green-600 pb-2">
+      <h2 class="text-xl font-semibold mb-4 border-b border-blue-600 pb-2">
         Prompts List
       </h2>
-      <div class="h-full overflow-y-auto grid grid-cols-2 gap-1">
+      <div class="h-full overflow-y-auto grid grid-cols-1 gap-1">
         {#each $promptStore as prompt}
-          <div class=" text-white p-4 rounded-md shadow-sm bg-green-800 h-full">
-            <h3 class="text-lg font-semibold text-green-200">{prompt.title}</h3>
-            <h4 class="text-md text-gray-400">{prompt.subtitle}</h4>
+          <div
+            class=" text-white p-4 rounded-md shadow-sm bg-gradient-to-br from-blue-400 via-blue-900 to-blue-800 h-full"
+          >
+            <h3 class="text-lg font-semibold text-white">{prompt.title}</h3>
+            <h4 class="text-md text-white">{prompt.subtitle}</h4>
 
             <div class="mt-2 flex flex-row justify-center gap-4">
               <button

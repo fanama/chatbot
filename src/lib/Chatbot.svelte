@@ -74,71 +74,19 @@
   });
 </script>
 
-<div
-  bind:this={messageContainer}
-  class="h-full w-full overflow-y-auto border-b border-t border-green-600 rounded-lg p-4 mb-4 shadow-lg bg-green-800 text-green-200 font-mono"
->
-  {#each history as message}
-    <Displayer {message} />
-  {/each}
-  {#if loading}
-    <div class="flex justify-center items-center">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  {/if}
-</div>
-<div class="flex flex-row w-full gap-2 mb-4">
-  <textarea
-    bind:value={input}
-    placeholder="Type your message..."
-    class="border border-green-600 p-3 w-3/4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-700 text-green-200 font-mono"
-    on:keydown={(e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault(); // Empêche le comportement par défaut (aller à la ligne)
-        sendMessage();
-      }
-    }}
-  ></textarea>
-
-  <div class="flex flex-col gap-2 w-1/3">
-    <select
-      bind:value={promptSystem}
-      class="w-full h-full border border-green-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-green-700 text-green-200 font-mono"
-    >
-      {#each prompts as prompt}
-        <option value={prompt.text}>{prompt.title}</option>
-      {/each}
-    </select>
-  </div>
-</div>
-
-<div class="flex flex-row justify-center w-full gap-2">
-  <button
-    on:click={sendMessage}
-    class="flex items-center cursor-pointer justify-center w-9/10 bg-green-600 text-gray-100 p-3 rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 border border-green-600 font-mono"
+<div class="flex flex-row p-2 gap-6">
+  <select
+    bind:value={promptSystem}
+    class="w-full h-full p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-blue-900 font-mono"
   >
-    <svg
-      class="w-6 h-6 mr-2"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-      ></path>
-    </svg>
-    Send
-  </button>
-
-  <button
+    {#each prompts as prompt}
+      <option value={prompt.text}>{prompt.title}</option>
+    {/each}
+  </select><button
     on:click={() => {
       history = [];
     }}
-    class="bg-red-700 cursor-pointer text-gray-100 p-3 rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 border border-red-600 flex justify-center items-center font-mono"
+    class=" bg-red-700 cursor-pointer text-gray-100 p-3 rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 border border-red-600 flex justify-center items-center font-mono"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -155,3 +103,48 @@
     Clear
   </button>
 </div>
+<div
+  bind:this={messageContainer}
+  class="h-full w-full overflow-y-auto border-b border-t border-blue-600 rounded-lg p-4 mb-4 shadow-lg bg-gradient-to-br from-blue-700 to-blue-400 text-blue-200 font-mono"
+>
+  {#each history as message}
+    <Displayer {message} />
+  {/each}
+  {#if loading}
+    <div class="flex justify-center items-center">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  {/if}
+</div>
+<textarea
+  bind:value={input}
+  placeholder="Type your message..."
+  class=" p-3 w-full rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gradient-to-br from-gray-200 to-white text-blue-600 font-mono"
+  on:keydown={(e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault(); // Empêche le comportement par défaut (aller à la ligne)
+      sendMessage();
+    }
+  }}
+></textarea>
+
+<button
+  on:click={sendMessage}
+  class="mt-2 flex items-center cursor-pointer justify-center w-full bg-blue-600 text-gray-100 p-3 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-600 font-mono"
+>
+  <svg
+    class="w-6 h-6 mr-2"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+    ></path>
+  </svg>
+  Send
+</button>

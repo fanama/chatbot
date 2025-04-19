@@ -13,7 +13,7 @@
   class={`message flex items-start space-x-4 mb-4 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
 >
   <div
-    class={`${message.sender === "user" ? "bg-green-800 text-white" : "bg-green-800 text-white"} p-4 rounded-lg  w-fit overflow-auto border-b border-green-600`}
+    class={`bg-gradient-to-br from-blue-200 to-white text-blue-900 p-4 rounded-lg  w-fit overflow-auto `}
   >
     <div class="markdown-content">
       {@html parsedContent}
@@ -22,7 +22,7 @@
       <button
         on:click={() => clipboard.copy(message.text)}
         type="button"
-        class="px-2 py-1 bg-green-600 cursor-pointer text-white rounded hover:bg-green-500 flex items-center text-xs"
+        class="px-2 py-1 bg-blue-600 cursor-pointer text-white rounded hover:bg-blue-500 flex items-center text-xs"
         aria-label="Copy to clipboard"
         title="Copy to clipboard"
       >
@@ -45,7 +45,7 @@
       </button>
       {#if message.provider}
         <div
-          class="px-2 py-1 bg-green-600 text-white rounded flex items-center text-xs"
+          class="px-2 py-1 bg-blue-600 text-white rounded flex items-center text-xs"
         >
           <span class="ml-1">{message.provider}</span>
         </div>

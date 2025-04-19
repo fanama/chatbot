@@ -8,8 +8,9 @@
   };
 </script>
 
-<button class={`w-full p-2 rounded-xs ${className}`} on:click={toogleModal}
-  >{title}</button
+<button
+  class={`w-full p-2 rounded-xs cursor-pointer ${className}`}
+  on:click={toogleModal}>{title}</button
 >
 
 {#if isOpen}
@@ -21,14 +22,13 @@
       class=" p-2 rounded-lg shadow-lg max-w-full h-2/3 relative"
       on:click|stopPropagation
     >
-      <slot
-        ><button
-          class="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
-          on:click={toogleModal}
-        >
-          ×
-        </button></slot
+      <button
+        class="absolute top-2 right-2 text-gray-600 text-white p-4 hover:bg-red-800 bg-red-400 cursor-pointer rounded"
+        on:click={toogleModal}
       >
+        ×
+      </button>
+      <slot></slot>
     </div>
   </div>
 {/if}
