@@ -19,7 +19,7 @@
     on:click={toogleModal}
   >
     <div
-      class=" p-2 rounded-lg shadow-lg max-w-full h-2/3 relative"
+      class=" p-2 rounded-lg max-w-full h-2/3 relative"
       on:click|stopPropagation
     >
       <button

@@ -2,8 +2,6 @@
   import type { PromptEntity } from "../domain/entities/prompt";
   import { promptStore, promptStorage } from "./store";
 
-  // Define the prompt store
-
   // Local state for managing the current prompt being edited
   let currentPrompt: PromptEntity | null = null;
   let title = "";
@@ -11,21 +9,21 @@
   let text = "";
   let showPromptList = false;
 
-  let prompts = promptStorage.getAll();
-
   // Function to add or update a prompt
   function savePrompt() {
-    if (currentPrompt) {
-      // Update existing prompt
-      prompts = prompts.map((prompt) =>
-        prompt === currentPrompt
-          ? { ...prompt, title, subtitle, text }
-          : prompt,
-      );
-    } else {
-      // Add new prompt
-      prompts = [...prompts, { title, subtitle, text }];
-    }
+    promptStore.update((prompts) => {
+      if (currentPrompt) {
+        // Update existing prompt
+        return prompts.map((prompt) =>
+          prompt === currentPrompt
+            ? { ...prompt, title, subtitle, text }
+            : prompt,
+        );
+      } else {
+        // Add new prompt
+        return [...prompts, { title, subtitle, text }];
+      }
+    });
     resetForm();
     togglePage();
   }
@@ -49,28 +47,28 @@
 
   // Function to remove a prompt
   function removePrompt(prompt: PromptEntity) {
-    prompts = prompts.filter((p) => p !== prompt);
+    promptStore.update((prompts) => prompts.filter((p) => p !== prompt));
   }
 
   function togglePage() {
     showPromptList = !showPromptList;
   }
 
-  $: if (prompts) {
-    promptStorage.save(prompts);
-    promptStore.set(prompts);
+  // Reactive statement to save prompts to storage whenever promptStore updates
+  $: {
+    promptStore.subscribe((value) => {
+      promptStorage.save(value);
+    });
   }
 </script>
 
-<div
-  class="w-full h-full text-white border-l border-r border-blue-600 font-mono flex flex-col"
->
+<div class="w-full h-full text-white font-mono flex flex-col">
   <div class="flex flex-row justify-center">
     <button
       on:click={togglePage}
-      class="p-2 bg-blue-700 text-white hover:bg-blue-800 border border-blue-600"
+      class="p-2 text-blue-700 bg-gradient-to-br from-white to-blue-200 cursor-pointer rounded hfull"
     >
-      Toggle to {!showPromptList ? "Form" : "List"}
+      {!showPromptList ? "New" : "Return"}
     </button>
   </div>
   {#if showPromptList}
@@ -79,39 +77,39 @@
         Prompt Manager
       </h1>
 
-      <label for="title" class="block text-sm font-medium text-blue-200">
-        Title
-      </label>
+      <label for="title" class="block text-sm font-medium text-blue-900"
+        >Title</label
+      >
       <input
         id="title"
         type="text"
         bind:value={title}
-        class="mt-1 p-2 w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-blue-800 text-blue-200"
+        class="mt-1 p-2 w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gradient-to-br from-white to-blue-200 text-blue-900"
       />
 
-      <label for="subtitle" class="block text-sm font-medium text-blue-200">
-        Subtitle
-      </label>
+      <label for="subtitle" class="block text-sm font-medium text-blue-900"
+        >Subtitle</label
+      >
       <input
         id="subtitle"
         type="text"
         bind:value={subtitle}
-        class="mt-1 p-2 w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-blue-800 text-blue-200"
+        class="mt-1 p-2 w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gradient-to-br from-white to-blue-200 text-blue-900"
       />
 
-      <label for="text" class="block text-sm font-medium text-blue-200">
-        Text
-      </label>
+      <label for="text" class="block text-sm font-medium text-blue-900"
+        >Text</label
+      >
       <textarea
         id="text"
         bind:value={text}
-        class="mt-1 p-2 w-full h-40 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-blue-800 text-blue-200"
+        class="mt-1 p-2 w-full h-40 rounded-md shadow-sm sm:text-sm bg-gradient-to-br from-white to-blue-200 text-blue-900"
       ></textarea>
 
       <div class="flex flex-row gap-2 mt-4">
         <button
           on:click={savePrompt}
-          class="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 border border-blue-600"
+          class="px-4 py-2 bg-gradient-to-br from-white to-blue-200 text-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 border border-blue-600"
         >
           {currentPrompt ? "Update" : "Create"} Prompt
         </button>
@@ -124,28 +122,28 @@
       </div>
     </div>
   {:else}
-    <div class="h-full text-white p-4 rounded-md shadow-md flex-grow">
+    <div class="h-full text-white p-4 rounded-md flex-grow">
       <h2 class="text-xl font-semibold mb-4 border-b border-blue-600 pb-2">
         Prompts List
       </h2>
       <div class="h-full overflow-y-auto grid grid-cols-1 gap-1">
         {#each $promptStore as prompt}
           <div
-            class=" text-white p-4 rounded-md shadow-sm bg-gradient-to-br from-blue-400 via-blue-900 to-blue-800 h-full"
+            class=" text-blue-900 p-4 rounded-md shadow-sm bg-gradient-to-br from-blue-200 to-white h-full"
           >
-            <h3 class="text-lg font-semibold text-white">{prompt.title}</h3>
-            <h4 class="text-md text-white">{prompt.subtitle}</h4>
+            <h3 class="text-lg font-semibold text-blue-900">{prompt.title}</h3>
+            <h4 class="text-md text-blue-900">{prompt.subtitle}</h4>
 
-            <div class="mt-2 flex flex-row justify-center gap-4">
+            <div class="mt-2 flex flex-row justify-between">
               <button
                 on:click={() => editPrompt(prompt)}
-                class="px-3 py-1 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 border border-blue-600"
+                class="px-3 py-1 cursor-pointer bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 border border-blue-600"
               >
                 Edit
               </button>
               <button
                 on:click={() => removePrompt(prompt)}
-                class="flex flex-row px-3 py-1 bg-red-600 text-white rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 border border-red-600"
+                class="flex flex-row cursor-pointer px-3 py-1 bg-red-600 text-white rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 border border-red-600"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
