@@ -11,6 +11,8 @@
   $: prompts = $promptStore;
 
   let promptSystem = "";
+  let providers: string[] = [];
+  let provider: string = "";
 
   let history: MessageEntity[] = historyStorage.getAll();
   let input: string = "";
@@ -51,6 +53,7 @@
     const response = await ai.chat({
       text,
       history: [{ sender: "system", text: promptSystem }, ...history],
+      providerName: provider,
     });
 
     // Add AI response to the chat
@@ -70,6 +73,8 @@
   onMount(async () => {
     try {
       promptSystem = prompts[0].text;
+      providers = ai.getAll();
+      provider = providers[0];
     } catch (err) {}
   });
 </script>
@@ -77,6 +82,14 @@
 <div
   class="flex flex-row bg-gradient-to-r from-blue-700 to-blue-400 p-2 gap-6 w-full"
 >
+  <select
+    bind:value={provider}
+    class="w-full h-full p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-blue-900 font-mono"
+  >
+    {#each providers as provider}
+      <option value={provider}>{provider}</option>
+    {/each}
+  </select>
   <select
     bind:value={promptSystem}
     class="w-full h-full p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-blue-900 font-mono"

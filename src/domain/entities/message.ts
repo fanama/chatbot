@@ -8,6 +8,7 @@ export interface Input {
   text: string;
   history?: MessageEntity[];
   model?: string;
+  providerName?: string;
 }
 
 export interface Response {
