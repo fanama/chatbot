@@ -5,17 +5,18 @@
 </script>
 
 <main
-  class="h-screen bg-blue-800 flex flex-col items-center justify-center p-4"
+  class="h-screen bg-gradient-to-br from-blue-800 to-white flex flex-col items-center justify-center"
 >
-  <h1
-    class="text-3xl font-bold mb-4 text-blue-300 bg-blue-700 w-full text-center border border-blue-600 rounded-lg"
-  >
-    Nerd-Bot
-  </h1>
-  <div class="flex flex-row p-1">
-    <Modal className="text-blue-600 bg-white" title="liste des consignes"
-      ><PromptManager /></Modal
-    >
-  </div>
+  <nav class="bg-blue-900 p-4 w-full">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-3xl font-bold text-white">Nerd-Bot</h1>
+      <div class="flex text-white">
+        <Modal className="text-blue-600 bg-white" title="Settings">
+          <PromptManager />
+        </Modal>
+      </div>
+    </div>
+  </nav>
+  <div class="flex flex-row p-1"></div>
   <Chatbot />
 </main>

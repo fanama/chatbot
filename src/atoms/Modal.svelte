@@ -15,19 +15,21 @@
 
 {#if isOpen}
   <div
-    class="fixed inset-0 flex h-max-screen items-center justify-center backdrop"
+    class="fixed inset-0 flex h-max-screen items-right backdrop"
     on:click={toogleModal}
   >
     <div
-      class=" p-2 rounded-lg max-w-full h-2/3 relative"
+      class=" p-2 rounded-lg max-w-full h-full bg-blue-900"
       on:click|stopPropagation
     >
-      <button
-        class="absolute top-2 right-2 text-gray-600 text-white p-4 hover:bg-red-800 bg-red-400 cursor-pointer rounded"
-        on:click={toogleModal}
-      >
-        ×
-      </button>
+      <div class="flex p-1 justify-end">
+        <button
+          class="top-2 right-2 text-gray-600 text-white p-3 hover:bg-red-800 bg-red-400 cursor-pointer rounded"
+          on:click={toogleModal}
+        >
+          ×
+        </button>
+      </div>
       <slot></slot>
     </div>
   </div>
@@ -35,6 +37,6 @@
 
 <style>
   .backdrop {
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0);
   }
 </style>
