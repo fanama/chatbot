@@ -2,22 +2,39 @@
   import type { MessageEntity } from "../domain/entities/message";
   import { marked } from "marked";
   import clipboard from "../infra/keyboard/clipBoard";
+  import VoiceOutput from "./VoiceOutput.svelte";
 
   export let message: MessageEntity;
 
   // Parse markdown content once when the component is created
-  $: parsedContent = marked.parse(message.text);
+  let parsedContent = "";
+
+  async function parse() {
+    try {
+      parsedContent = await marked.parse(message.text);
+    } catch {
+      parsedContent = message.text;
+    }
+  }
+
+  $: parse();
+
+  const isUser = message.sender === "user";
 </script>
 
 <div
-  class={`message flex items-start space-x-4 mb-4 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+  class={`message flex items-start space-x-4 mb-4 ${isUser ? "justify-end" : "justify-start"}`}
 >
   <div
     class={`bg-gradient-to-br from-blue-200 to-white text-blue-900 p-4 rounded-lg  w-fit overflow-auto `}
   >
-    <div class="markdown-content">
-      {@html parsedContent}
-    </div>
+    {#if isUser}
+      {message.text}
+    {:else}<div class="markdown-content">
+        {@html parsedContent}
+      </div>
+    {/if}
+
     <div class="flex flex-row gap-2 text-right p-2">
       <button
         on:click={() => clipboard.copy(message.text)}
@@ -50,6 +67,7 @@
           <span class="ml-1">{message.provider}</span>
         </div>
       {/if}
+      <VoiceOutput textValue={message.text} />
     </div>
   </div>
 </div>

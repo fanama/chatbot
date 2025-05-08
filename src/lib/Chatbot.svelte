@@ -11,6 +11,8 @@
   } from "./store";
   import { LocalStorage } from "../infra/storage/localStorage";
 
+  import VoiceInput from "../atoms/VoiceInput.svelte";
+
   const historyStorage = new LocalStorage<MessageEntity>("history", []);
 
   $: prompts = $promptStore;
@@ -132,6 +134,7 @@
     }}
   ></textarea>
 
+  <VoiceInput bind:transcript={input} />
   <button
     on:click={sendMessage}
     class="flex items-center justify-center bg-blue-600 text-gray-100 p-3 rounded-r-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-600 font-mono"

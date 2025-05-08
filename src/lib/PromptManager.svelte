@@ -4,6 +4,7 @@
   import ProviderManager from "./ProviderManager.svelte";
   import type { PromptEntity } from "../domain/entities/prompt";
   import { promptStore, promptStorage, promptSystemStore } from "./store";
+  import LanguageSelector from "../atoms/LanguageSelector.svelte";
 
   // Local state for managing the current prompt being edited
   let currentPrompt: PromptEntity | null = null;
@@ -70,7 +71,7 @@
 </script>
 
 <div class="w-full h-3/4 text-white font-mono flex flex-col gap-2">
-  <div>Settings</div>
+  <LanguageSelector />
   <button
     on:click={togglePage}
     class="p-2 text-blue-700 bg-gradient-to-br from-white to-blue-200 cursor-pointer rounded w-full h-full"

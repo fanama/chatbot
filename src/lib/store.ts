@@ -9,3 +9,4 @@ export const promptStore = writable<PromptEntity[]>(promptStorage.getAll());
 export const promptSystemStore = writable<string>("");
 export const providersStore = writable<string[]>([]);
 export const providerStore = writable<string>("");
+export const language = writable<string>("en-US");

@@ -14,9 +14,9 @@ export class AIProvider {
 
   constructor() {
     this.providers = [
-      new OpenRouterAI(),
       new MistralAI(),
       new GoogleAI(),
+      new OpenRouterAI(),
       new OllamaAI(),
     ];
   }
