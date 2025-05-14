@@ -42,6 +42,26 @@ If you have state that's important to retain within a component, consider creati
 ```ts
 // store.ts
 // An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+import { writable } from "svelte/store";
+export default writable(0);
+```
+
+## launch server
+
+```
+bun run proxy.ts
+```
+
+## init chroma DB
+
+- install
+
+```sh
+pip install chromadb
+```
+
+- launch
+
+```sh
+chroma run --path ./getting-started
 ```

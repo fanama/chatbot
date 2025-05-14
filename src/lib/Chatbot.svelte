@@ -8,13 +8,16 @@
     promptSystemStore,
     providersStore,
     providerStore,
+    language,
   } from "./store";
   import { LocalStorage } from "../infra/storage/localStorage";
 
   import VoiceInput from "../atoms/VoiceInput.svelte";
+  import { Embedding } from "../infra/storage/embedding";
 
   const historyStorage = new LocalStorage<MessageEntity>("history", []);
 
+  let store: Embedding | null = null;
   $: prompts = $promptStore;
 
   $: promptSystem = $promptSystemStore;
@@ -50,15 +53,29 @@
 
     // Clear the input field
     const text = input;
-    input = "";
 
     // Set loading state to true
     loading = true;
 
+    let context: string[] = [];
+
+    if (store) {
+      context = await store.search(input);
+    }
+    console.log({ context });
+    input = "";
+
     // Make API call to Google Generative AI
     const response = await ai.chat({
       text,
-      history: [{ sender: "system", text: promptSystem }, ...history],
+      history: [
+        { sender: "system", text: promptSystem },
+        ...context.map((text) => {
+          return { sender: "system", text };
+        }),
+        { sender: "system", text: `you will respond in ${$language}` },
+        ...history,
+      ],
       providerName: provider,
     });
 
@@ -83,6 +100,8 @@
       const provider = providers[0];
       providersStore.set(providers);
       providerStore.set(provider);
+      store = new Embedding();
+      await store.initialize(); // Ensure the store is initialized
     } catch (err) {}
   });
 </script>
