@@ -76,7 +76,7 @@
       disabled={isLoading}
       class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
     >
-      Add
+      upload text
     </button>
     <button
       on:click={searchDoc}

@@ -51,7 +51,16 @@
   };
 
   const splitTextIntoChunks = (text: string) => {
-    chunks = text.split("\n\n");
+    const lines = text.split("\n");
+
+    let currentLine = "";
+    for (let index = 0; index < lines.length; index++) {
+      currentLine += `${lines[index]}`;
+      if (index % 50 == 0 && index !== 0) {
+        chunks = [...chunks, currentLine];
+        currentLine = "";
+      }
+    }
   };
 
   onMount(() => {
@@ -78,7 +87,7 @@
     <button
       type="submit"
       class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-green-300"
-      >Upload</button
+      >Convert to text</button
     >
   </form>
 
