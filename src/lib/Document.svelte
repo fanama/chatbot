@@ -62,12 +62,13 @@
   }
 </script>
 
-<div class="w-full">
+<div class="w-full flex flex-row">
   <Uploader bind:chunks />
   <div class="flex flex-col gap-2">
+    <h1 class="text-2xl font-bold mb-4">Search</h1>
     <input
       bind:value={text}
-      class="flex-1 p-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-600"
+      class=" p-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-600"
       placeholder="Enter text..."
     />
     <button

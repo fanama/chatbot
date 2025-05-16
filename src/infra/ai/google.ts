@@ -1,40 +1,52 @@
-import axios from "axios";
+import { GoogleGenAI } from "@google/genai";
 import type { Input, Response } from "../../domain/entities/message";
 
 export class GoogleAI {
   name = "google";
+
   async chat({
     text,
     history = [],
-    model = "gemini-2.0-flash:generateContent",
+    model = "gemini-2.0-flash",
   }: Input): Promise<Response> {
     try {
-      console.log("google", model);
-      const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GOOGLE_KEY}`,
+      const ai = new GoogleGenAI({
+        apiKey: `${import.meta.env.VITE_GOOGLE_KEY}`,
+      });
+
+      const config = {
+        responseMimeType: "text/plain",
+      };
+
+      const contents = [
+        ...history.map((message) => {
+          return {
+            role: message.sender !== "user" ? "model" : message.sender,
+            parts: [{ text: message.text }],
+          };
+        }),
         {
-          contents: [
-            history.map((message) => {
-              return {
-                role: message.sender !== "user" ? "model" : message.sender,
-                parts: [{ text: message.text }],
-              };
-            }),
+          role: "user",
+          parts: [
             {
-              role: "user",
-              parts: [{ text }],
+              text: text,
             },
           ],
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      ];
+
+      const response = await ai.models.generateContent({
+        model,
+        config,
+        contents,
+      });
+
+      if (!response.text) {
+        throw "error";
+      }
 
       return {
-        text: response.data.candidates[0].content.parts[0].text,
+        text: response.text,
         provider: this.name,
       };
     } catch (err) {
