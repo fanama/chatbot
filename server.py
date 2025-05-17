@@ -10,7 +10,7 @@ app = Flask(__name__)
 CORS(app)
 port = 3001
 
-@app.route("/upload", methods=["POST"])
+@app.route("/upload/", methods=["POST"])
 def upload_file():
     if "file" not in request.files:
         return "No file uploaded.", 400

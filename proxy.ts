@@ -1,12 +1,29 @@
 import express, { Request, Response } from "express";
-import bodyParser from "body-parser";
 import { ChromaClient, Collection, IncludeEnum } from "chromadb";
 import cors from "cors"; // Import the cors package
+import { createProxyMiddleware } from "http-proxy-middleware";
+
 const app = express();
 const port = 3000;
 
-app.use(bodyParser.json());
+// Proxy middleware options
+const options = {
+  target: "http://localhost:3001/upload", // Target the Python server
+  changeOrigin: true,
+  pathRewrite: {
+    "^/upload": "/upload", // Pass through the same path
+  },
+};
+
+const uploadProxy = createProxyMiddleware(options);
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(cors());
+
+// Use the proxy middleware
+app.use("/upload", uploadProxy);
 
 class ChromaDBClient {
   private client: ChromaClient;
@@ -56,6 +73,12 @@ class ChromaDBClient {
 
 const chromaDBClient = new ChromaDBClient("my_collection");
 
+app.use(express.static("dist"));
+
+app.get("/", (_req, res) => {
+  res.sendFile("./dist/index.html");
+});
+
 app.post("/initialize", async (req: Request, res: Response) => {
   try {
     await chromaDBClient.initialize();
@@ -87,6 +110,14 @@ app.post("/query", async (req: Request, res: Response) => {
     res.status(200).json(results);
   } catch (error) {
     res.status(500).send("Error querying collection");
+  }
+});
+
+app.post("/upload", async (req: Request, res: Response) => {
+  try {
+    res.status(200).send("success");
+  } catch (error) {
+    res.status(500).send("Error upload");
   }
 });
 

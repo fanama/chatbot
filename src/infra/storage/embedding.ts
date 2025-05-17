@@ -7,7 +7,7 @@ export class Embedding {
 
   async initialize() {
     try {
-      const response = await axios.post("http://localhost:3000/initialize");
+      const response = await axios.post("/initialize");
       if (response.status !== 200) {
         throw new Error("Failed to initialize collection");
       }
@@ -19,7 +19,7 @@ export class Embedding {
 
   async add(text: string) {
     try {
-      const response = await axios.post("http://localhost:3000/documents", {
+      const response = await axios.post("/documents", {
         documents: [text],
         ids: [`id-${Math.trunc(Math.random() * 1000)}`],
       });
@@ -34,7 +34,7 @@ export class Embedding {
 
   async search(text: string): Promise<string[]> {
     try {
-      const response = await axios.post("http://localhost:3000/query", {
+      const response = await axios.post("/query", {
         queryTexts: [text],
         nResults: 2,
       });
@@ -50,7 +50,7 @@ export class Embedding {
 
   async remove(id: string) {
     try {
-      const response = await axios.delete("http://localhost:3000/documents", {
+      const response = await axios.delete("/documents", {
         data: { ids: [id] },
       });
       if (response.status !== 200) {

@@ -60,7 +60,11 @@
     let context: string[] = [];
 
     if (store) {
-      context = await store.search(input);
+      try {
+        context = await store.search(input);
+      } catch (e) {
+        console.log("no DB");
+      }
     }
     console.log({ context });
     input = "";
