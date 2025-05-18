@@ -13,9 +13,13 @@
 1. **Clone the repository:**
 
    ```bash
-   git clone <repository-url>
-   cd <project-directory>
+   git clone git@github.com:fanama/chatbot.git
    ```
+
+- or
+  ```bash
+  git clone https://github.com/fanama/chatbot.git
+  ```
 
 2. **Install Bun.js dependencies:**
 
@@ -64,4 +68,28 @@ pip install chromadb
 
 ```sh
 chroma run --path ./getting-started
+```
+
+## Lanch the whole app
+
+To launch the app you will need 3 terminals. One to launch the bun server, one for the database and one for the python server
+
+- bun
+
+```sh
+bun proxy.ts
+```
+
+- database
+
+```sh
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+chroma run --path ./getting-started
+```
+
+- python
+
+```sh
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+python3 server.py
 ```
