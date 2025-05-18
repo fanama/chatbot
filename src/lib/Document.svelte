@@ -61,6 +61,7 @@
     }
 
     isLoading = false;
+    chunks = [];
   }
 </script>
 

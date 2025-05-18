@@ -63,6 +63,9 @@
       if (index % 50 == 0 && index !== 0) {
         chunks = [...chunks, currentLine];
         currentLine = "";
+      } else {
+        chunks = [...chunks, currentLine];
+        currentLine = "";
       }
     }
   };
