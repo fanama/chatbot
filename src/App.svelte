@@ -23,7 +23,7 @@
 >
   <nav class="bg-blue-900 p-4 w-full">
     <div class="container mx-auto flex justify-between items-center">
-      <h1 class="text-3xl font-bold text-white">Nerd-Bot</h1>
+      <h1 class="text-3xl font-bold text-white">Demo</h1>
       <div class="flex text-white justify-between gap-2">
         <Modal className="text-blue-600 bg-white" title="Settings">
           <PromptManager />

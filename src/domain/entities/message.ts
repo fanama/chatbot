@@ -2,6 +2,7 @@ export interface MessageEntity {
   sender: string;
   text: string;
   provider?: string;
+  context?: string[];
 }
 
 export interface Input {

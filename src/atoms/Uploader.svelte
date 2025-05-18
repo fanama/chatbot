@@ -55,7 +55,11 @@
 
     let currentLine = "";
     for (let index = 0; index < lines.length; index++) {
-      currentLine += `${lines[index]}`;
+      const line = lines[index];
+      currentLine += `${line}`;
+      if (line == " ") {
+        continue;
+      }
       if (index % 50 == 0 && index !== 0) {
         chunks = [...chunks, currentLine];
         currentLine = "";
@@ -68,37 +72,38 @@
   });
 </script>
 
-<main class="p-8 max-w-2xl mx-auto">
-  <h1 class="text-2xl font-bold mb-4">Upload a PDF or Text File</h1>
+<main class="p-8">
+  <h1 class="text-2xl font-bold mb-4 text-white">Upload</h1>
 
-  <form on:submit={onSubmit} class="flex flex-col gap-2">
+  <form on:submit={onSubmit} class="flex flex-col gap-4">
     <input
       type="file"
       name="video"
       required
       class="block w-full text-sm text-gray-500
-    file:mr-4 file:py-2 file:px-4
-    file:rounded-md file:border-0
-    file:text-sm file:font-semibold
-    file:bg-blue-50 file:text-blue-700
-    hover:file:bg-blue-100
-    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      file:mr-4 file:py-2 file:px-4
+      file:rounded-md file:border-0
+      file:text-sm file:font-semibold
+      file:bg-blue-50 file:text-blue-700
+      hover:file:bg-blue-100
+      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
     />
     <button
       type="submit"
-      class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-green-300"
-      >Convert to text</button
+      class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-green-300 transition duration-300"
     >
+      Convert to Text
+    </button>
   </form>
 
   {#if chunks.length > 0}
-    <div class="h-40 overflow-scroll flex flex-col gap-2">
-      <h2 class="text-xl font-semibold mb-2">Text Chunks</h2>
+    <div class="mt-4 h-40 overflow-y-auto flex flex-col gap-2">
+      <h2 class="text-xl font-semibold mb-2 text-gray-800">Text Chunks</h2>
       {#each chunks as chunk}
-        <p class="bg-white text-blue-600 p-2">{chunk}</p>
+        <p class="bg-gray-100 text-blue-600 p-2 rounded-lg">{chunk}</p>
       {/each}
     </div>
   {:else}
-    <p>No chunks available.</p>
+    <p class="text-gray-500 mt-4">No chunks available.</p>
   {/if}
 </main>

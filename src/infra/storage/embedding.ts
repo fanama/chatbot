@@ -36,7 +36,7 @@ export class Embedding {
     try {
       const response = await axios.post("/query", {
         queryTexts: [text],
-        nResults: 2,
+        nResults: 10,
       });
       if (response.status !== 200) {
         throw new Error("Failed to search documents");

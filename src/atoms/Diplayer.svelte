@@ -3,6 +3,7 @@
   import { marked } from "marked";
   import clipboard from "../infra/keyboard/clipBoard";
   import VoiceOutput from "./VoiceOutput.svelte";
+  import Modal from "./Modal.svelte";
 
   export let message: MessageEntity;
 
@@ -60,6 +61,7 @@
         </svg>
         <span class="ml-1">Copy</span>
       </button>
+
       {#if message.provider}
         <div
           class="px-2 py-1 bg-blue-600 text-white rounded flex items-center text-xs"

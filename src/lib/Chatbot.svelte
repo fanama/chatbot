@@ -90,6 +90,7 @@
         sender: "model",
         text: response.text,
         provider: response.provider,
+        context: context,
       },
     ];
 

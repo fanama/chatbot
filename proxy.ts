@@ -55,7 +55,8 @@ class ChromaDBClient {
   }
 
   async getDocument(ids: string[], include?: IncludeEnum[]): Promise<any> {
-    return await this.collection.get({ ids, include });
+    const results = await this.collection.get({ ids, include });
+    return results.documents;
   }
 
   async updateDocument(ids: string[], documents: string[]): Promise<void> {
@@ -67,7 +68,7 @@ class ChromaDBClient {
   }
 
   async deleteAllDocuments(): Promise<void> {
-    await this.collection.delete({});
+    await this.collection.delete({ ids: ["*"] });
   }
 }
 
@@ -130,6 +131,7 @@ app.get("/documents", async (req: Request, res: Response) => {
     );
     res.status(200).json(results);
   } catch (error) {
+    console.log(error);
     res.status(500).send("Error getting documents");
   }
 });
