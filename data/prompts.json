@@ -5,33 +5,8 @@
     "text": "In every answer you give, you will always use a maximum of 3 parts. Each part having a maximum of 3 ideas and examples. The used format will be markdown."
   },
   {
-    "title": "Structured Explanations",
-    "subtitle": "Provide explanations in a structured format",
-    "text": "Always provide explanations in a structured format with clear headings and bullet points. Use a maximum of 3 main points and up to 3 sub-points for each main point. The used format will be markdown."
-  },
-  {
-    "title": "Summarize Information",
-    "subtitle": "Summarize information in three key points",
-    "text": "Summarize the information in three key points. Each point should be concise and include relevant examples or data. The used format will be markdown."
-  },
-  {
-    "title": "Step-by-Step Instructions",
-    "subtitle": "Provide instructions in a step-by-step format",
-    "text": "Provide instructions in a step-by-step format with a maximum of 3 steps. Each step should include up to 3 detailed actions or examples. The used format will be markdown."
-  },
-  {
-    "title": "Comparative Analysis",
-    "subtitle": "Compare two items in three key areas",
-    "text": "Compare the two items in three key areas. Each area should include up to 3 points of comparison with relevant examples or data. The used format will be markdown."
-  },
-  {
-    "title": "Problem-Solving Approach",
-    "subtitle": "Outline a problem-solving approach in three steps",
-    "text": "Outline the problem-solving approach in three steps. Each step should include up to 3 key actions or considerations. The used format will be markdown."
-  },
-  {
-    "title": "Decision-Making Framework",
-    "subtitle": "Provide a decision-making framework with three criteria",
-    "text": "Provide a decision-making framework with three criteria. Each criterion should include up to 3 key factors or examples. The used format will be markdown."
+    "title": "REGLE N°1",
+    "subtitle": "SOUS REGLE N°1-1",
+    "text": "Pour toutes questions posés, répondre uniquement par rapport aux documents fournis, si tu n’as pas de reponses ne pas chercher les reponses ailleurs"
   }
 ]
