@@ -51,22 +51,36 @@
   };
 
   const splitTextIntoChunks = (text: string) => {
-    const lines = text.split("\n");
+    let currentChunk = "";
+    let currentChunkSize = 0;
 
-    let currentLine = "";
-    for (let index = 0; index < lines.length; index++) {
-      const line = lines[index];
-      currentLine += `${line}`;
-      if (line == " ") {
-        continue;
+    // Split the text into sentences
+    const sentences = text.split(/(?<=[.!?])\s+/);
+
+    for (const sentence of sentences) {
+      const sentenceLength = sentence.length;
+
+      // Check if adding the current sentence would exceed the max chunk size
+      if (currentChunkSize + sentenceLength > 500 && currentChunk) {
+        // Push the current chunk to the chunks array
+        chunks = [...chunks, currentChunk];
+        // Reset the current chunk
+        currentChunk = "";
+        currentChunkSize = 0;
       }
-      if (index % 50 == 0 && index !== 0) {
-        chunks = [...chunks, currentLine];
-        currentLine = "";
+
+      // Add the sentence to the current chunk
+      if (currentChunk) {
+        currentChunk += " " + sentence;
       } else {
-        chunks = [...chunks, currentLine];
-        currentLine = "";
+        currentChunk = sentence;
       }
+      currentChunkSize += sentenceLength;
+    }
+
+    // Push the last chunk if it's not empty
+    if (currentChunk) {
+      chunks = [...chunks, currentChunk];
     }
   };
 

@@ -5,6 +5,7 @@
   import PromptManager from "./lib/PromptManager.svelte";
   import { Embedding } from "./infra/storage/embedding";
   import { onMount } from "svelte";
+  import PdfViewer from "svelte-pdf";
 
   let error: string | null = null;
   onMount(async () => {
@@ -23,7 +24,9 @@
 >
   <nav class="bg-blue-900 p-4 w-full">
     <div class="container mx-auto flex justify-between items-center">
-      <h1 class="text-3xl font-bold text-white">Demo</h1>
+      <h1 class="text-3xl font-bold text-white">
+        Lalàna Velona sy Mazava, Toky ho an’ny Daholobe
+      </h1>
       <div class="flex text-white justify-between gap-2">
         <Modal className="text-blue-600 bg-white" title="Settings">
           <PromptManager />
@@ -31,6 +34,15 @@
         {#if !error}
           <Modal className="text-blue-600 bg-white" title="Documents">
             <Document />
+          </Modal>
+          <Modal className="text-blue-600 bg-white" title="Guide Utilisateur">
+            <div class="max-h-3/4 overflow-scroll">
+              <PdfViewer
+                showBorder={false}
+                scale={1.5}
+                url="./assets/guide_utilisateur.pdf"
+              />
+            </div>
           </Modal>
         {/if}
       </div>

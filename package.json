@@ -40,6 +40,8 @@
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
     "pdf.js-extract": "^0.2.1",
+    "svelte-pdf": "^1.0.27",
+    "svelte-pdf-simple": "^2.0.0",
     "tailwindcss": "^4.0.15"
   }
 }

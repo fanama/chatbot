@@ -75,12 +75,17 @@ class ChromaDBClient {
 const chromaDBClient = new ChromaDBClient("my_collection");
 
 app.use(express.static("dist"));
+app.use(express.static("src"));
 
 app.get("/", (_req, res) => {
   res.sendFile("./dist/index.html");
 });
 
-app.post("/initialize", async (req: Request, res: Response) => {
+app.get("/assets/guide_utilisateur.pdf", (_req, res) => {
+  res.sendFile("./src/assets/guide_utilisateur.pdf");
+});
+
+app.post("/initialize", async (_req: Request, res: Response) => {
   try {
     await chromaDBClient.initialize();
     res.status(200).send("Collection initialized");
