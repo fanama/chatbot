@@ -1,12 +1,12 @@
 [
   {
-    "title": "Concise Answers",
-    "subtitle": "Limit responses to three parts with three ideas each",
-    "text": "In every answer you give, you will always use a maximum of 3 parts. Each part having a maximum of 3 ideas and examples. The used format will be markdown."
-  },
-  {
     "title": "REGLE N°1",
     "subtitle": "SOUS REGLE N°1-1",
     "text": "Pour toutes questions posés, répondre uniquement par rapport aux documents fournis, si tu n’as pas de reponses ne pas chercher les reponses ailleurs"
+  },
+  {
+    "title": "Concise Answers",
+    "subtitle": "Limit responses to three parts with three ideas each",
+    "text": "In every answer you give, you will always use a maximum of 3 parts. Each part having a maximum of 3 ideas and examples. The used format will be markdown."
   }
 ]
