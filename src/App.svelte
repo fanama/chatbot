@@ -6,6 +6,7 @@
   import { Embedding } from "./infra/storage/embedding";
   import { onMount } from "svelte";
   import PdfViewer from "svelte-pdf";
+  import Guide from "./assets/guide_utilisateur.pdf";
 
   let error: string | null = null;
   onMount(async () => {
@@ -37,17 +38,12 @@
           </Modal>
           <Modal className="text-blue-600 bg-white" title="Guide Utilisateur">
             <div class="max-h-3/4 overflow-scroll">
-              <PdfViewer
-                showBorder={false}
-                scale={1.5}
-                url="./assets/guide_utilisateur.pdf"
-              />
+              <PdfViewer showBorder={false} scale={1.5} url={Guide} />
             </div>
           </Modal>
         {/if}
       </div>
     </div>
   </nav>
-  <div class="flex flex-row p-1"></div>
   <Chatbot />
 </main>
