@@ -7,6 +7,7 @@
   import { onMount } from "svelte";
   import PdfViewer from "svelte-pdf";
   import Guide from "./assets/guide_utilisateur.pdf";
+  import Video from "./assets/GuideVideo.mp4";
 
   let error: string | null = null;
   onMount(async () => {
@@ -39,6 +40,14 @@
           <Modal className="text-blue-600 bg-white" title="Guide Utilisateur">
             <div class="max-h-3/4 overflow-scroll">
               <PdfViewer showBorder={false} scale={1.5} url={Guide} />
+            </div>
+          </Modal>
+          <Modal className="text-blue-600 bg-white" title="Guide Vidéo">
+            <div class="max-h-3/4 flex justify-center">
+              <video class="w-[700px]" controls>
+                <track kind="captions" />
+                <source src={Video} type="video/mp4" />
+              </video>
             </div>
           </Modal>
         {/if}
