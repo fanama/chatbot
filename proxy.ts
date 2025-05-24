@@ -59,6 +59,11 @@ class ChromaDBClient {
     return results.documents;
   }
 
+  async getDocumentId(ids: string[], include?: IncludeEnum[]): Promise<any> {
+    const results = await this.collection.get({ ids, include });
+    return results.ids;
+  }
+
   async updateDocument(ids: string[], documents: string[]): Promise<void> {
     await this.collection.update({ ids, documents });
   }
@@ -163,8 +168,14 @@ app.delete("/documents", async (req: Request, res: Response) => {
 
 app.delete("/empty-documents", async (req: Request, res: Response) => {
   try {
-    await chromaDBClient.deleteAllDocuments();
-    res.status(200).send("All Documents deleted");
+    const { ids, include } = req.body;
+    const newIds = await chromaDBClient.getDocumentId(
+      ids as string[],
+      include as IncludeEnum[],
+    );
+    await chromaDBClient.deleteDocument(newIds);
+
+    res.status(200).send(newIds);
   } catch (error) {
     console.error(error);
     res.status(500).send("Error deleting documents");

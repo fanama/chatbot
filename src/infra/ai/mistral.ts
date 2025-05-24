@@ -15,6 +15,7 @@ export class MistralAI {
         "https://api.mistral.ai/v1/chat/completions",
         {
           model: "mistral-small-latest",
+          temperature: 0,
           messages: [
             ...history.map((message) => {
               return {
