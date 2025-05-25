@@ -61,7 +61,7 @@
       const sentenceLength = sentence.length;
 
       // Check if adding the current sentence would exceed the max chunk size
-      if (currentChunkSize + sentenceLength > 500 && currentChunk) {
+      if (currentChunkSize + sentenceLength > 10000 && currentChunk) {
         // Push the current chunk to the chunks array
         chunks = [...chunks, currentChunk];
         // Reset the current chunk
