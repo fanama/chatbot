@@ -49,7 +49,6 @@
     if (input.trim() === "") return;
 
     // Add user message to the chat
-    history = [...history, { sender: "user", text: input }];
 
     // Clear the input field
     const text = input;
@@ -86,6 +85,7 @@
     // Add AI response to the chat
     history = [
       ...history,
+      { sender: "user", text },
       {
         sender: "model",
         text: response.text,
