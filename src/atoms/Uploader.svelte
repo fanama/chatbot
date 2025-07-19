@@ -1,8 +1,43 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import pdf2md from "@opendocsg/pdf2md";
   let fileInput: HTMLInputElement;
   let textContent: string = "";
   export let chunks: string[] = [];
+
+  interface Chunk {
+    title: string;
+    content: string[];
+  }
+
+  function markdownToChunks(markdown: string): Chunk[] {
+    const lines = markdown.split("\n").filter((line) => line.trim() !== "");
+    console.log(markdown);
+
+    let chunks = [];
+    let currentChunk: Chunk | null = null;
+
+    for (const line of lines) {
+      if (line.startsWith("#")) {
+        if (currentChunk !== null) {
+          chunks.push(currentChunk);
+        }
+        currentChunk = {
+          title: line,
+          content: [],
+        };
+      } else {
+        if (currentChunk !== null) {
+          currentChunk.content.push(line);
+        }
+      }
+    }
+
+    if (currentChunk !== null) {
+      chunks.push(currentChunk);
+    }
+    return chunks;
+  }
 
   const onSubmit = async (event: Event) => {
     event.preventDefault();
@@ -14,7 +49,7 @@
     if (file) {
       if (file.type === "application/pdf") {
         formData.append("file", file);
-        await processPdfFile(formData);
+        await processPdfFile(file);
       } else if (file.type === "text/plain" || file.type === "text/markdown") {
         await processTextFile(file);
       } else {
@@ -30,20 +65,20 @@
     splitTextIntoChunks(text);
   };
 
-  const processPdfFile = async (formData: FormData) => {
+  const processPdfFile = async (file: File) => {
     try {
-      const response = await fetch("/upload", {
-        method: "POST",
-        body: formData,
-      });
+      let reader = new FileReader();
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
+      reader.onload = async function (event) {
+        if (!event.target) {
+          return;
+        }
+        let arrayBuffer = event.target.result;
+        const markdown = await pdf2md(arrayBuffer);
+        splitTextIntoChunks(markdown);
+      };
 
-      const data = await response.json();
-      const textContent = data.text;
-      splitTextIntoChunks(textContent);
+      reader.readAsArrayBuffer(file);
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("Error uploading file. Please try again.");
@@ -51,42 +86,10 @@
   };
 
   const splitTextIntoChunks = (text: string) => {
-    let currentChunk = "";
-    let currentChunkSize = 0;
-
-    // Split the text into sentences
-    const sentences = text.split(/(?<=[.!?])\s+/);
-
-    for (const sentence of sentences) {
-      const sentenceLength = sentence.length;
-
-      // Check if adding the current sentence would exceed the max chunk size
-      if (currentChunkSize + sentenceLength > 10000 && currentChunk) {
-        // Push the current chunk to the chunks array
-        chunks = [...chunks, currentChunk];
-        // Reset the current chunk
-        currentChunk = "";
-        currentChunkSize = 0;
-      }
-
-      // Add the sentence to the current chunk
-      if (currentChunk) {
-        currentChunk += " " + sentence;
-      } else {
-        currentChunk = sentence;
-      }
-      currentChunkSize += sentenceLength;
-    }
-
-    // Push the last chunk if it's not empty
-    if (currentChunk) {
-      chunks = [...chunks, currentChunk];
-    }
+    chunks = markdownToChunks(text).map((chunk) => {
+      return `${chunk.title} \n${chunk.content.join("\n")}`;
+    });
   };
-
-  onMount(() => {
-    // Initialize or set up anything if needed
-  });
 </script>
 
 <main class="p-8">
@@ -114,10 +117,9 @@
   </form>
 
   {#if chunks.length > 0}
-    <div class="mt-4 h-40 overflow-y-auto flex flex-col gap-2">
-      <h2 class="text-xl font-semibold mb-2 text-gray-800">Text Chunks</h2>
+    <div class="mt-4 h-40 overflow-y-auto bg-gray-100 flex flex-col gap-2">
       {#each chunks as chunk}
-        <p class="bg-gray-100 text-blue-600 p-2 rounded-lg">{chunk}</p>
+        <pre class="text-blue-600 p-2 rounded-lg h-20 max-w-96">{chunk}</pre>
       {/each}
     </div>
   {:else}

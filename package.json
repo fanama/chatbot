@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@google/genai": "^0.14.0",
+    "@opendocsg/pdf2md": "^0.2.1",
     "@supabase/supabase-js": "^2.49.4",
     "@tailwindcss/vite": "^4.0.15",
     "@types/cors": "^2.8.18",
