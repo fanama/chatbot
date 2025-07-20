@@ -43,7 +43,7 @@ export class OllamaAI {
     }
 
     const reader = response.body.getReader();
-    await readStream(reader, (text:string)=> {
+    await this.readStream(reader, (text:string)=> {
       stream(text)
       result+=text
     });
@@ -65,9 +65,8 @@ export class OllamaAI {
       return [];
     }
   }
-}
 
-async function readStream(
+  private  async  readStream(
     reader: ReadableStreamDefaultReader<Uint8Array>,
     stream: (text: string) => void = (text: string) => console.log({ text }),
   ) {
@@ -84,3 +83,5 @@ async function readStream(
       }
     }
   }
+}
+

@@ -73,14 +73,14 @@
       {/if}
        
       <VoiceOutput textValue={message.text} />
-      {#if message.context}
+      {#if message.context && message.context.length>0}
       <button           class="px-2 py-1 bg-blue-600 text-white rounded flex items-center text-xs"
  on:click={()=>contextDisplayer=!contextDisplayer} >context</button>
       {/if}
     </div>
     
   </div>
-  {#if message.context && contextDisplayer}
+  {#if message.context && contextDisplayer && message.context.length>0}
         <div
           class="px-2 py-1 overflow-scroll rounded flex flex-col items-center text-xs bg-white text-blue-600 w-1/3 max-h-80"
         >

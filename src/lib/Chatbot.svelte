@@ -14,7 +14,6 @@
 
   import VoiceInput from "../atoms/VoiceInput.svelte";
   import { Embedding } from "../infra/storage/embedding";
-    import { text } from "stream/consumers";
     import BasicDiplayer from "../atoms/BasicDiplayer.svelte";
 
   const historyStorage = new LocalStorage<MessageEntity>("history", []);
