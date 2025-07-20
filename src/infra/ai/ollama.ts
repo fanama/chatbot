@@ -18,10 +18,7 @@ export class OllamaAI {
       const url = `${this.ollamaEndpoint}/api/generate`
       // Build the prompt based on history (critical for Ollama's behavior)
       const prompt =
-        history.map((msg) => `${msg.sender}: ${msg.text}`).join("\n") +
-        "\nuser: " +
-        text +
-        "\n"; //System prompt needed
+        history.map((msg) => `${msg.sender}: ${msg.text}`).join("\n"); //System prompt needed
       
       const data = {
         model,

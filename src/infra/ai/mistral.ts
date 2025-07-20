@@ -24,11 +24,7 @@ export class MistralAI {
         ...history.map((message) => ({
           role: message.sender !== "user" ? "assistant" : message.sender,
           content: message.text,
-        })),
-        {
-          role: "user",
-          content: text,
-        },
+        }))
       ];
 
       const response = await fetch(url, {

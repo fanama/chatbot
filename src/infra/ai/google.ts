@@ -24,15 +24,7 @@ export class GoogleAI {
             role: message.sender !== "user" ? "model" : message.sender,
             parts: [{ text: message.text }],
           };
-        }),
-        {
-          role: "user",
-          parts: [
-            {
-              text: text,
-            },
-          ],
-        },
+        })
       ];
 
       const response = await ai.models.generateContent({

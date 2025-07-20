@@ -21,7 +21,7 @@
         return prompts.map((prompt) =>
           prompt === currentPrompt
             ? { ...prompt, title, subtitle, text }
-            : prompt,
+            : prompt
         );
       } else {
         // Add new prompt
@@ -70,11 +70,13 @@
   }
 </script>
 
-<div class="w-full h-3/4 text-white font-mono flex flex-col gap-2">
+<div
+  class="w-full text-white font-mono flex flex-col gap-2 p-2 overflow-scroll"
+>
   <LanguageSelector />
   <button
     on:click={togglePage}
-    class="p-2 text-blue-700 bg-gradient-to-br from-white to-blue-200 cursor-pointer rounded w-full h-full"
+    class="p-2 text-blue-700 bg-gradient-to-br from-white to-blue-200 cursor-pointer rounded w-full"
   >
     {!showPromptList ? "New" : "Return"}
   </button>
@@ -91,7 +93,9 @@
       {resetForm}
     />
   {:else}
-    <div class="h-full w-full text-white p-4 rounded-md flex-grow">
+    <div
+      class="h-full w-full text-white p-4 rounded-md flex-grow overflow-scroll"
+    >
       <div class="h-full overflow-y-auto grid grid-cols-1 gap-1">
         {#each $promptStore as prompt}
           <PromptDisplayer

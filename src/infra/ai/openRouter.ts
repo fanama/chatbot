@@ -18,11 +18,7 @@ export class OpenRouterAI {
           messages: [
             ...history.map((message) => {
               return { role: message.sender, content: message.text };
-            }),
-            {
-              role: "user",
-              content: text,
-            },
+            })
           ],
         },
         {

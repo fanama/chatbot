@@ -14,7 +14,7 @@
 
   import VoiceInput from "../atoms/VoiceInput.svelte";
   import { Embedding } from "../infra/storage/embedding";
-    import BasicDiplayer from "../atoms/BasicDiplayer.svelte";
+  import BasicDiplayer from "../atoms/BasicDiplayer.svelte";
 
   const historyStorage = new LocalStorage<MessageEntity>("history", []);
 
@@ -27,7 +27,7 @@
   let history: MessageEntity[] = historyStorage.getAll();
   let input: string = "";
   let loading: boolean = false;
-  let streamContent = ""
+  let streamContent = "";
 
   let messageContainer: HTMLDivElement;
 
@@ -69,13 +69,7 @@
     }
     console.log({ context });
     input = "";
-
-    // Add Question  to the chat
-    history = [
-      ...history,
-      { sender: "user", text },
-    ];
-
+    history = [...history, { sender: "user", text: text }];
     // Make API call to Google Generative AI
     const response = await ai.chat({
       text,
@@ -88,7 +82,7 @@
         ...history,
       ],
       providerName: provider,
-      stream:(text=>streamContent+=text)
+      stream: (text) => (streamContent += text),
     });
 
     // Add AI response to the chat
@@ -104,7 +98,7 @@
 
     // Set loading state to false
     loading = false;
-    streamContent = ""
+    streamContent = "";
   };
 
   onMount(async () => {
@@ -128,7 +122,7 @@
     <Displayer {message} />
   {/each}
   {#if loading}
-  <BasicDiplayer message={streamContent} />
+    <BasicDiplayer message={streamContent} />
   {/if}
 </div>
 <div class="flex flex-row justify-end p-2 gap-6 w-full">
