@@ -10,6 +10,7 @@ export interface Input {
   history?: MessageEntity[];
   model?: string;
   providerName?: string;
+  stream?:(chunk:string)=>void
 }
 
 export interface Response {

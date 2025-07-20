@@ -7,8 +7,10 @@
 
   export let message: MessageEntity;
 
+
   // Parse markdown content once when the component is created
   let parsedContent = "";
+  let contextDisplayer = false
 
   async function parse() {
     try {
@@ -69,9 +71,24 @@
           <span class="ml-1">{message.provider}</span>
         </div>
       {/if}
+       
       <VoiceOutput textValue={message.text} />
+      {#if message.context}
+      <button           class="px-2 py-1 bg-blue-600 text-white rounded flex items-center text-xs"
+ on:click={()=>contextDisplayer=!contextDisplayer} >context</button>
+      {/if}
     </div>
+    
   </div>
+  {#if message.context && contextDisplayer}
+        <div
+          class="px-2 py-1 overflow-scroll rounded flex flex-col items-center text-xs bg-white text-blue-600 w-1/3 max-h-80"
+        >
+          {#each message.context as context}
+            <span class="p-1">{context}</span>
+          {/each}
+        </div>
+      {/if}
 </div>
 
 <style>

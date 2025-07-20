@@ -10,29 +10,45 @@ export class OllamaAI {
     this.ollamaEndpoint = ollamaEndpoint;
   }
 
-  async chat({ text, history = [] }: Input): Promise<Response> {
+  async chat({ text, history = [],stream=(chunk)=>console.log({chunk}) }: Input): Promise<Response> {
+    let result = "";
+
     try {
-      console.log("ollama : gemma3:1b");
+      const model = "gemma3n"
+      const url = `${this.ollamaEndpoint}/api/generate`
       // Build the prompt based on history (critical for Ollama's behavior)
       const prompt =
         history.map((msg) => `${msg.sender}: ${msg.text}`).join("\n") +
         "\nuser: " +
         text +
         "\n"; //System prompt needed
-
-      const response = await axios.post(`${this.ollamaEndpoint}/api/generate`, {
-        model: "gemma3:1b",
+      
+      const data = {
+        model,
         prompt: prompt,
-        stream: false, // crucial for simpler handling
-      });
-
-      if (!response.data.response) {
-        throw new Error(`Ollama returned an empty response.`);
       }
-      return {
-        text: response.data.response,
-        provider: this.name,
-      };
+      
+
+      const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok || !response.body) {
+      console.log(response)
+      throw new Error(`Network response was not ok : ${url} ${JSON.stringify(data,null,2)}`);
+    }
+
+    const reader = response.body.getReader();
+    await readStream(reader, (text:string)=> {
+      stream(text)
+      result+=text
+    });
+
+    return { text: result,provider:this.name };
     } catch (error) {
       console.error("Ollama API Error:", error);
       throw new Error(JSON.stringify(error));
@@ -50,3 +66,21 @@ export class OllamaAI {
     }
   }
 }
+
+async function readStream(
+    reader: ReadableStreamDefaultReader<Uint8Array>,
+    stream: (text: string) => void = (text: string) => console.log({ text }),
+  ) {
+    const decoder = new TextDecoder();
+    let done = false;
+
+    while (!done) {
+      const { value, done: streamDone } = await reader.read();
+      done = streamDone;
+      if (value) {
+        const chunkStr = decoder.decode(value);
+        const chunk = JSON.parse(chunkStr);
+        stream(chunk.response);
+      }
+    }
+  }
