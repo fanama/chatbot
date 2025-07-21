@@ -21,7 +21,6 @@
   let store: Embedding | null = null;
   $: prompts = $promptStore;
 
-  $: promptSystem = $promptSystemStore;
   $: provider = $providerStore;
 
   let history: MessageEntity[] = historyStorage.getAll();
@@ -74,7 +73,7 @@
     const response = await ai.chat({
       text,
       history: [
-        { sender: "system", text: promptSystem },
+        { sender: "system", text: $promptSystemStore },
         ...context.map((text) => {
           return { sender: "system", text };
         }),
@@ -103,7 +102,9 @@
 
   onMount(async () => {
     try {
-      promptSystem = prompts[0].text;
+      if ($promptSystemStore == "" && $promptStore.length > 0) {
+        promptSystemStore.set($promptStore[0].text);
+      }
       const providers = ai.getAll();
       const provider = providers[0];
       providersStore.set(providers);

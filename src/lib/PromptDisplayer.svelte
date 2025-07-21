@@ -1,14 +1,17 @@
 <script lang="ts">
   import type { PromptEntity } from "../domain/entities/prompt";
+  import { promptSystemStore, promptStore } from "./store";
 
   export let prompt: PromptEntity;
   export let editPrompt: (prompt: PromptEntity) => void;
   export let selectPrompt: (prompt: PromptEntity) => void;
   export let removePrompt: (prompt: PromptEntity) => void;
+
+  $: selected = $promptSystemStore == prompt.text;
 </script>
 
 <div
-  class=" text-blue-900 p-4 rounded-md shadow-sm bg-gradient-to-br from-blue-200 to-white h-full"
+  class={`text-blue-900 p-4 rounded-md shadow-sm ${selected ? "bg-gradient-to-br from-green-200 to-white" : "bg-gradient-to-br from-blue-200 to-white"} h-full`}
 >
   <h3 class="text-lg font-semibold text-blue-900">{prompt.title}</h3>
   <h4 class="text-md text-blue-900">{prompt.subtitle}</h4>

@@ -4,7 +4,6 @@ import PROMPT from "../../data/prompts.json";
 import { LocalStorage } from "../infra/storage/localStorage.js";
 
 export const promptStorage = new LocalStorage<PromptEntity>("prompt", PROMPT);
-
 export const promptStore = writable<PromptEntity[]>(promptStorage.getAll());
 export const promptSystemStore = writable<string>("");
 export const providersStore = writable<string[]>([]);
