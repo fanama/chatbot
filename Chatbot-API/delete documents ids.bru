@@ -1,0 +1,23 @@
+meta {
+  name: delete documents ids
+  type: http
+  seq: 4
+}
+
+delete {
+  url: http://localhost:3000/documents
+  body: none
+  auth: inherit
+}
+
+body:json {
+  {
+    "ids": [],
+    "include": []
+  }
+}
+
+body:multipart-form {
+  ids: []
+  include: []
+}

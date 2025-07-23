@@ -17,11 +17,12 @@ export class Embedding {
     }
   }
 
-  async add(text: string) {
+  async add(text: string,metadata?:Record<string,object>) {
     try {
       const response = await axios.post("/documents", {
         documents: [text],
         ids: [`id-${Math.trunc(Math.random() * 1000)}`],
+        metadatas:[metadata]
       });
       if (response.status !== 200) {
         throw new Error("Failed to add document");

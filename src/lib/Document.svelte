@@ -26,7 +26,6 @@
         text = ""; // Clear the input after adding
       } catch (err) {
         console.error(err);
-      } finally {
       }
     }
   }
@@ -48,10 +47,10 @@
 
   async function loadChunks() {
     if (chunks.length < 1) {
-      alert("there is no chunk to upload");
+      alert("There is no chunk to upload");
       return;
     }
-    console.log("loading");
+    console.log("Loading");
     isLoading = true;
 
     for (const chunk of chunks) {
@@ -65,16 +64,23 @@
   }
 </script>
 
-<div class="w-full flex flex-row gap-4 p-4">
+<div
+  class="h-screen w-screen grid grid-cols-2 gap-4 p-4 bg-gradient-to-br from-blue-800 to-white"
+>
+  <!-- Left Section: Uploader -->
   <Uploader bind:chunks />
-  <div class="flex flex-col gap-2 w-2/3">
-    <h1 class="text-2xl font-bold mb-4 text-white">Search</h1>
+
+  <!-- Right Section: Search -->
+  <div
+    class="flex-1 flex flex-col bg-white rounded-lg shadow-lg p-4 overflow-scroll"
+  >
+    <h1 class="text-2xl font-bold mb-4 text-gray-800">Search</h1>
     <input
       bind:value={text}
-      class="p-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-600"
+      class="p-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
       placeholder="Enter text..."
     />
-    <div class="flex gap-2">
+    <div class="flex gap-2 mt-4">
       <button
         on:click={loadChunks}
         disabled={isLoading}
@@ -93,7 +99,7 @@
 
     {#if isLoading}
       <p class="text-center text-gray-500 mt-4">
-        Loading...{Math.trunc(percent * 100)}%
+        Loading... {Math.trunc(percent * 100)}%
       </p>
     {:else if results.length > 0}
       <div class="mt-4">

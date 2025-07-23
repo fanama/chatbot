@@ -92,7 +92,7 @@
   };
 </script>
 
-<main class="p-8">
+<main class="p-8 overflow-scroll">
   <h1 class="text-2xl font-bold mb-4 text-white">Upload</h1>
 
   <form on:submit={onSubmit} class="flex flex-col gap-4">
@@ -117,9 +117,11 @@
   </form>
 
   {#if chunks.length > 0}
-    <div class="mt-4 h-40 overflow-y-auto bg-gray-100 flex flex-col gap-2">
+    <div
+      class="mt-4 h-screen overflow-y-scroll bg-gray-100 flex flex-col gap-2"
+    >
       {#each chunks as chunk}
-        <pre class="text-blue-600 p-2 rounded-lg h-20 max-w-96">{chunk}</pre>
+        <pre class="text-blue-600 p-2 rounded-lg max-w-96">{chunk}</pre>
       {/each}
     </div>
   {:else}

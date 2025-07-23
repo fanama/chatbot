@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { ChromaClient, Collection, IncludeEnum } from "chromadb";
 import cors from "cors"; // Import the cors package
 import { createProxyMiddleware } from "http-proxy-middleware";
+import { ChromaDBClient } from "./backend/vectoreStoreClient/chromaDBClient";
 
 const app = express();
 const port = 3000;
@@ -24,58 +25,6 @@ app.use(cors());
 
 // Use the proxy middleware
 app.use("/upload", uploadProxy);
-
-class ChromaDBClient {
-  private client: ChromaClient;
-  private collection: Collection;
-
-  constructor(
-    private collectionName: string = "test",
-    private chromaServerUrl: string = "http://localhost:8000",
-  ) {
-    this.client = new ChromaClient({ path: this.chromaServerUrl });
-  }
-
-  async initialize(): Promise<void> {
-    this.collection = await this.client.getOrCreateCollection({
-      name: this.collectionName,
-    });
-  }
-
-  async addDocument(documents: string[], ids: string[]): Promise<void> {
-    await this.collection.add({ documents, ids });
-  }
-
-  async queryCollection(
-    queryTexts: string[],
-    nResults: number = 10,
-    include?: IncludeEnum[],
-  ): Promise<any> {
-    return await this.collection.query({ queryTexts, nResults, include });
-  }
-
-  async getDocument(ids: string[], include?: IncludeEnum[]): Promise<any> {
-    const results = await this.collection.get({ ids, include });
-    return results.documents;
-  }
-
-  async getDocumentId(ids: string[], include?: IncludeEnum[]): Promise<any> {
-    const results = await this.collection.get({ ids, include });
-    return results.ids;
-  }
-
-  async updateDocument(ids: string[], documents: string[]): Promise<void> {
-    await this.collection.update({ ids, documents });
-  }
-
-  async deleteDocument(ids: string[]): Promise<void> {
-    await this.collection.delete({ ids });
-  }
-
-  async deleteAllDocuments(): Promise<void> {
-    await this.collection.delete({ ids: ["*"] });
-  }
-}
 
 const chromaDBClient = new ChromaDBClient("my_collection");
 
@@ -101,8 +50,8 @@ app.post("/initialize", async (_req: Request, res: Response) => {
 
 app.post("/documents", async (req: Request, res: Response) => {
   try {
-    const { documents, ids } = req.body;
-    await chromaDBClient.addDocument(documents, ids);
+    const { documents, ids, metadatas } = req.body;
+    await chromaDBClient.addDocument(documents, ids, metadatas);
     res.status(200).send("Documents added");
   } catch (error) {
     console.error(error);
@@ -121,14 +70,6 @@ app.post("/query", async (req: Request, res: Response) => {
     res.status(200).json(results);
   } catch (error) {
     res.status(500).send("Error querying collection");
-  }
-});
-
-app.post("/upload", async (req: Request, res: Response) => {
-  try {
-    res.status(200).send("success");
-  } catch (error) {
-    res.status(500).send("Error upload");
   }
 });
 
@@ -168,14 +109,9 @@ app.delete("/documents", async (req: Request, res: Response) => {
 
 app.delete("/empty-documents", async (req: Request, res: Response) => {
   try {
-    const { ids, include } = req.body;
-    const newIds = await chromaDBClient.getDocumentId(
-      ids as string[],
-      include as IncludeEnum[],
-    );
-    await chromaDBClient.deleteDocument(newIds);
+    await chromaDBClient.deleteAllDocuments()
 
-    res.status(200).send(newIds);
+    res.status(200).send("success");
   } catch (error) {
     console.error(error);
     res.status(500).send("Error deleting documents");

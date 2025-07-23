@@ -30,9 +30,7 @@
 3. **Set up the Python virtual environment:**
 
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   pip install -r requirements.txt
+   uv pip install -r pyproject.toml
    ```
 
 4. **Set up environment variables:**
@@ -83,13 +81,6 @@ bun proxy.ts
 - database
 
 ```sh
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+source .venv/bin/activate  # On Windows use `venv\Scripts\activate`
 chroma run --path ./getting-started
-```
-
-- python
-
-```sh
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-python3 server.py
 ```
