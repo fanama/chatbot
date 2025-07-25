@@ -1,0 +1,82 @@
+[
+  {
+    "document": "Quel est le pouvoir de Goku dans Dragon Ball ?",
+    "metadata": {
+      "title": "Pouvoir de Goku",
+      "perfect": "Goku possède le Ki, une énergie vitale qu'il utilise pour des techniques comme le Kamehameha et la transformation en Super Saiyan.",
+      "anime": "Dragon Ball"
+    }
+  },
+  {
+    "document": "Où se déroule l'histoire de One Piece ?",
+    "metadata": {
+      "title": "Univers de One Piece",
+      "perfect": "L'histoire de One Piece se déroule dans un monde fictif composé de vastes océans, d'îles et de la célèbre Grand Line.",
+      "anime": "One Piece"
+    }
+  },
+  {
+    "document": "Qui est le rival de Naruto dans Naruto Shippuden ?",
+    "metadata": {
+      "title": "Rival de Naruto",
+      "perfect": "Le principal rival de Naruto est Sasuke Uchiha, un ancien camarade devenu un adversaire complexe.",
+      "anime": "Naruto"
+    }
+  },
+  {
+    "document": "Quel est le but de l'attaque des Titans ?",
+    "metadata": {
+      "title": "But des Titans",
+      "perfect": "Dans l'Attaque des Titans, les Titans cherchent à détruire l'humanité, mais leur origine cache des secrets complexes.",
+      "anime": "L'Attaque des Titans"
+    }
+  },
+  {
+    "document": "Comment fonctionne le Death Note ?",
+    "metadata": {
+      "title": "Fonctionnement du Death Note",
+      "perfect": "Le Death Note permet de tuer une personne en écrivant son nom tout en visualisant son visage. Des règles spécifiques s'appliquent.",
+      "anime": "Death Note"
+    }
+  },
+  {
+    "document": "Quel est le rôle de Levi dans l'Attaque des Titans ?",
+    "metadata": {
+      "title": "Rôle de Levi",
+      "perfect": "Levi Ackerman est le capitaine du Bataillon d'exploration, connu pour ses compétences exceptionnelles en combat contre les Titans.",
+      "anime": "L'Attaque des Titans"
+    }
+  },
+  {
+    "document": "Quelle est la quête principale dans Hunter x Hunter ?",
+    "metadata": {
+      "title": "Quête dans Hunter x Hunter",
+      "perfect": "Dans Hunter x Hunter, Gon Freecss cherche à devenir un Hunter et à retrouver son père, Ging Freecss.",
+      "anime": "Hunter x Hunter"
+    }
+  },
+  {
+    "document": "Qu'est-ce que le Sharingan dans Naruto ?",
+    "metadata": {
+      "title": "Sharingan",
+      "perfect": "Le Sharingan est une capacité héréditaire du clan Uchiha, permettant de copier des techniques et d'anticiper les mouvements.",
+      "anime": "Naruto"
+    }
+  },
+  {
+    "document": "Quel est le rôle de Nami dans l'équipage de Luffy ?",
+    "metadata": {
+      "title": "Rôle de Nami",
+      "perfect": "Nami est la navigatrice de l'équipage de Luffy dans One Piece, experte en cartographie et en météorologie.",
+      "anime": "One Piece"
+    }
+  },
+  {
+    "document": "Comment se termine Fullmetal Alchemist: Brotherhood ?",
+    "metadata": {
+      "title": "Fin de Fullmetal Alchemist",
+      "perfect": "Fullmetal Alchemist: Brotherhood se termine avec Edward sacrifiant sa capacité d'alchimie pour ramener son frère Alphonse.",
+      "anime": "Fullmetal Alchemist: Brotherhood"
+    }
+  }
+]

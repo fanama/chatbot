@@ -1,0 +1,35 @@
+meta {
+  name: request RAG
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:3000/documents
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "documents":["Qui est le rival de Naruto dans Naruto Shippuden ?"],
+    "metadatas":[{
+        "title": "Rival de Naruto",
+        "perfect": "Le principal rival de Naruto est Sasuke Uchiha, un ancien camarade devenu un adversaire complexe.",
+        "anime": "Naruto"
+      }],
+    "ids":["azerty1"]
+  }
+}
+
+body:multipart-form {
+  documents: ["Qui est le rival de Naruto dans Naruto Shippuden ?"]
+  metadatas: '''
+    [{
+          "title": "Rival de Naruto",
+          "perfect": "Le principal rival de Naruto est Sasuke Uchiha, un ancien camarade devenu un adversaire complexe.",
+          "anime": "Naruto"
+        }]
+  '''
+  ids: ["1"]
+}

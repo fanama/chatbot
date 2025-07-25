@@ -1,5 +1,12 @@
 import { ChromaClient, Collection, IncludeEnum } from "chromadb";
 
+interface Query {
+    queryTexts: string[],
+    nResults: number,
+    include?: IncludeEnum[],
+    metadatas?: object
+}
+
 export class ChromaDBClient {
     private client: ChromaClient;
     private collection: Collection;
@@ -22,12 +29,13 @@ export class ChromaDBClient {
         await this.collection.add({ documents, ids, metadatas });
     }
 
-    async queryCollection(
-        queryTexts: string[],
-        nResults: number = 10,
-        include?: IncludeEnum[],
-    ) {
-        return await this.collection.query({ queryTexts, nResults, include });
+    async queryCollection({
+        queryTexts,
+        nResults = 10,
+        include,
+        metadatas
+    }: Query) {
+        return await this.collection.query({ queryTexts, nResults, include, where: metadatas });
     }
 
     async getDocument(ids: string[], include?: IncludeEnum[]): Promise<any> {

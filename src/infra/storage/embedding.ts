@@ -17,12 +17,12 @@ export class Embedding {
     }
   }
 
-  async add(text: string,metadata?:Record<string,object>) {
+  async add(text: string, metadata?: Record<string, object>) {
     try {
       const response = await axios.post("/documents", {
         documents: [text],
         ids: [`id-${Math.trunc(Math.random() * 1000)}`],
-        metadatas:[metadata]
+        metadatas: [metadata]
       });
       if (response.status !== 200) {
         throw new Error("Failed to add document");
@@ -33,11 +33,12 @@ export class Embedding {
     }
   }
 
-  async search(text: string): Promise<string[]> {
+  async search(text: string, metadatas?: object): Promise<string[]> {
     try {
       const response = await axios.post("/query", {
         queryTexts: [text],
         nResults: 10,
+        metadatas
       });
       if (response.status !== 200) {
         throw new Error("Failed to search documents");

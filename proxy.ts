@@ -61,14 +61,16 @@ app.post("/documents", async (req: Request, res: Response) => {
 
 app.post("/query", async (req: Request, res: Response) => {
   try {
-    const { queryTexts, nResults, include } = req.body;
-    const results = await chromaDBClient.queryCollection(
+    const { queryTexts, nResults, include, metadatas } = req.body;
+    const results = await chromaDBClient.queryCollection({
       queryTexts,
       nResults,
       include,
-    );
+      metadatas
+    });
     res.status(200).json(results);
   } catch (error) {
+    console.error(error)
     res.status(500).send("Error querying collection");
   }
 });
