@@ -1,5 +1,7 @@
 import axios from "axios"; // You'll need to install axios or use another HTTP client
 
+const app = import.meta.env.TITLE || "demo"
+
 export class Embedding {
   constructor() {
     // No need to initialize the collection here
@@ -17,12 +19,12 @@ export class Embedding {
     }
   }
 
-  async add(text: string, metadata?: Record<string, object>) {
+  async add(text: string, metadata?: object) {
     try {
       const response = await axios.post("/documents", {
         documents: [text],
         ids: [`id-${Math.trunc(Math.random() * 1000)}`],
-        metadatas: [metadata]
+        metadatas: [{ ...metadata, app }]
       });
       if (response.status !== 200) {
         throw new Error("Failed to add document");
@@ -38,7 +40,7 @@ export class Embedding {
       const response = await axios.post("/query", {
         queryTexts: [text],
         nResults: 10,
-        metadatas
+        metadatas: { ...metadatas, app }
       });
       if (response.status !== 200) {
         throw new Error("Failed to search documents");
