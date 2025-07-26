@@ -4,6 +4,8 @@
   import Uploader from "../atoms/Uploader.svelte";
 
   let chunks: string[] = [];
+  let titles: string[] = [];
+
   let text = "";
   let store: Embedding | null = null;
   let results: string[] = [];
@@ -19,10 +21,10 @@
     }
   });
 
-  async function addDoc(value: string) {
+  async function addDoc(value: string, metadata?: object) {
     if (store && value) {
       try {
-        await store.add(value);
+        await store.add(value, metadata);
         text = ""; // Clear the input after adding
       } catch (err) {
         console.error(err);
@@ -34,9 +36,10 @@
     if (store && text) {
       try {
         isLoading = true;
-        const searchResults = await store.search(text);
-        results = searchResults;
-        console.log({ results });
+        const { documents: searchResults, metadatas } =
+          await store.search(text);
+        console.log({ metadatas });
+        results = [...new Set([...metadatas, ...searchResults])];
       } catch (err) {
         console.error(err);
       } finally {
@@ -52,10 +55,16 @@
     }
     console.log("Loading");
     isLoading = true;
+    const context = `
+# TABLE OF CONTENT
+
+${titles.join("\n")}
+
+      `;
 
     for (const chunk of chunks) {
       const index = chunks.indexOf(chunk);
-      await addDoc(chunk);
+      await addDoc(chunk, { context, page: `page : ${chunks.indexOf(chunk)}` });
       percent = index / chunks.length;
     }
 
@@ -68,7 +77,7 @@
   class="h-screen w-screen grid grid-cols-2 gap-4 p-4 bg-gradient-to-br from-blue-800 to-white"
 >
   <!-- Left Section: Uploader -->
-  <Uploader bind:chunks />
+  <Uploader bind:chunks bind:titles />
 
   <!-- Right Section: Search -->
   <div

@@ -57,16 +57,19 @@
     // Set loading state to true
     loading = true;
 
-    let context: string[] = [];
+    let documents: string[] = [];
+    let metadatas: string[] = [];
 
     if (store) {
       try {
-        context = await store.search(input);
+        const storeResult = await store.search(input);
+        documents = storeResult.documents;
+        metadatas = [...new Set(storeResult.metadatas)];
       } catch (e) {
         console.log("no DB");
       }
     }
-    console.log({ context });
+    console.log({ documents, metadatas });
     input = "";
     history = [...history, { sender: "user", text: text }];
     // Make API call to Google Generative AI
@@ -74,7 +77,10 @@
       text,
       history: [
         { sender: "system", text: $promptSystemStore },
-        ...context.map((text) => {
+        ...documents.map((text) => {
+          return { sender: "system", text };
+        }),
+        ...metadatas.map((text) => {
           return { sender: "system", text };
         }),
         { sender: "system", text: `you will respond in ${$language}` },
@@ -91,7 +97,7 @@
         sender: "model",
         text: response.text,
         provider: response.provider,
-        context: context,
+        context: [...metadatas, ...documents],
       },
     ];
 

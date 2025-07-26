@@ -35,7 +35,7 @@ export class Embedding {
     }
   }
 
-  async search(text: string, metadatas?: object): Promise<string[]> {
+  async search(text: string, metadatas?: object): Promise<{ documents: string[], metadatas: string[] }> {
     try {
       const response = await axios.post("/query", {
         queryTexts: [text],
@@ -45,7 +45,9 @@ export class Embedding {
       if (response.status !== 200) {
         throw new Error("Failed to search documents");
       }
-      return response.data.documents[0];
+
+      const metaResults: object[] = response.data.metadatas[0]
+      return { documents: response.data.documents[0], metadatas: metaResults.map(value => Object.values(value)).flat() };
     } catch (error) {
       console.error("Search error:", error);
       throw error;

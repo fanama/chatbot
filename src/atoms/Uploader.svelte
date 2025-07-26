@@ -4,6 +4,7 @@
   let fileInput: HTMLInputElement;
   let textContent: string = "";
   export let chunks: string[] = [];
+  export let titles: string[] = [];
 
   interface Chunk {
     title: string;
@@ -12,13 +13,13 @@
 
   function markdownToChunks(markdown: string): Chunk[] {
     const lines = markdown.split("\n").filter((line) => line.trim() !== "");
-    console.log(markdown);
 
-    let chunks = [];
+    let chunks: Chunk[] = [];
     let currentChunk: Chunk | null = null;
 
     for (const line of lines) {
       if (line.startsWith("#")) {
+        titles = [...titles, line];
         if (currentChunk !== null) {
           chunks.push(currentChunk);
         }
