@@ -51,7 +51,6 @@
 
     // Add user message to the chat
 
-    // Clear the input field
     const text = input;
 
     // Set loading state to true
@@ -69,7 +68,6 @@
         console.log("no DB");
       }
     }
-    console.log({ documents, metadatas });
     input = "";
     history = [...history, { sender: "user", text: text }];
     // Make API call to Google Generative AI

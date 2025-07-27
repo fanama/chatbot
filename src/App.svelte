@@ -38,6 +38,10 @@
       <div class="flex text-white justify-between gap-2">
         <button
           class={`w-full p-2 rounded-xs cursor-pointer text-blue-600 bg-white`}
+          on:click={() => (page = 0)}>Chatbot</button
+        >
+        <button
+          class={`w-full p-2 rounded-xs cursor-pointer text-blue-600 bg-white`}
           on:click={() => (page = 1)}>Settings</button
         >
         {#if !error}
