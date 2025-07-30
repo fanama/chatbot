@@ -40,7 +40,7 @@ export class ChromaDBClient {
 
     async getDocument(ids: string[], include?: IncludeEnum[]): Promise<any> {
         const results = await this.collection.get({ ids, include });
-        return results.documents;
+        return results;
     }
 
     async getFullDocument(ids?: string[], include?: IncludeEnum[]): Promise<any> {

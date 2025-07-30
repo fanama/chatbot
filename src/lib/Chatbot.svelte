@@ -19,9 +19,6 @@
   const historyStorage = new LocalStorage<MessageEntity>("history", []);
 
   let store: Embedding | null = null;
-  $: prompts = $promptStore;
-
-  $: provider = $providerStore;
 
   let history: MessageEntity[] = historyStorage.getAll();
   let input: string = "";
@@ -84,7 +81,7 @@
         { sender: "system", text: `you will respond in ${$language}` },
         ...history,
       ],
-      providerName: provider,
+      providerName: $providerStore,
       stream: (text) => (streamContent += text),
     });
 
@@ -110,9 +107,13 @@
         promptSystemStore.set($promptStore[0].text);
       }
       const providers = ai.getAll();
-      const provider = providers[0];
+
       providersStore.set(providers);
-      providerStore.set(provider);
+      if (!$providerStore) {
+        const provider = providers[0];
+        providerStore.set(provider);
+      }
+
       store = new Embedding();
       await store.initialize(); // Ensure the store is initialized
     } catch (err) {}
