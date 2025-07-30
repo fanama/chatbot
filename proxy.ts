@@ -77,10 +77,13 @@ app.post("/query", async (req: Request, res: Response) => {
 
 app.get("/documents", async (req: Request, res: Response) => {
   try {
-    const { ids, include } = req.query;
+    const { ids, include, metadatas } = req.query;
+    const parsedMetadatas = metadatas ? JSON.parse(metadatas as string) : undefined;
+
     const results = await chromaDBClient.getDocument(
       ids as string[],
       include as IncludeEnum[],
+      parsedMetadatas
     );
     res.status(200).json(results);
   } catch (error) {
@@ -111,7 +114,9 @@ app.delete("/documents", async (req: Request, res: Response) => {
 
 app.delete("/empty-documents", async (req: Request, res: Response) => {
   try {
-    await chromaDBClient.deleteAllDocuments()
+    const { metadatas } = req.body;
+
+    await chromaDBClient.deleteAllDocuments(metadatas)
 
     res.status(200).send("success");
   } catch (error) {

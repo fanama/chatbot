@@ -38,18 +38,19 @@ export class ChromaDBClient {
         return await this.collection.query({ queryTexts, nResults, include, where: metadatas });
     }
 
-    async getDocument(ids: string[], include?: IncludeEnum[]): Promise<any> {
-        const results = await this.collection.get({ ids, include });
+    async getDocument(ids: string[], include?: IncludeEnum[], metadatas?: object): Promise<any> {
+
+        const results = await this.collection.get({ ids, include, where: metadatas });
         return results;
     }
 
-    async getFullDocument(ids?: string[], include?: IncludeEnum[]): Promise<any> {
-        const results = await this.collection.get({ ids, include });
+    async getFullDocument(ids?: string[], include?: IncludeEnum[], metadatas?: object): Promise<any> {
+        const results = await this.collection.get({ ids, include, where: metadatas });
         return [results.ids, results.documents, results.metadatas];
     }
 
-    async getDocumentId(ids: string | string[], include?: IncludeEnum[]): Promise<any> {
-        const results = await this.collection.get({ ids, include });
+    async getDocumentId(ids: string | string[], include?: IncludeEnum[], metadatas?: object): Promise<any> {
+        const results = await this.collection.get({ ids, include, where: metadatas });
         return results.ids;
     }
 
@@ -61,8 +62,8 @@ export class ChromaDBClient {
         await this.collection.delete({ ids });
     }
 
-    async deleteAllDocuments(): Promise<void> {
-        const newIds = await this.getDocumentId("")
+    async deleteAllDocuments(metadatas?: object): Promise<void> {
+        const newIds = await this.getDocumentId("", undefined, metadatas)
         await this.deleteDocument(newIds);
 
     }
