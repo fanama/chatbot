@@ -10,10 +10,11 @@ export interface Input {
   history?: MessageEntity[];
   model?: string;
   providerName?: string;
-  stream?:(chunk:string)=>void
+  stream?: (chunk: string) => void
 }
 
 export interface Response {
   text: string;
+  summary?: string;
   provider: string;
 }

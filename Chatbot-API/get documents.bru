@@ -6,6 +6,10 @@ meta {
 
 get {
   url: http://localhost:3000/documents
-  body: none
+  body: multipartForm
   auth: inherit
+}
+
+body:multipart-form {
+  metadatas: {"metadatas":{"app":"demo"}}
 }

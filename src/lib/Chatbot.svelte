@@ -24,6 +24,7 @@
   let input: string = "";
   let loading: boolean = false;
   let streamContent = "";
+  let summary = "";
 
   let messageContainer: HTMLDivElement;
 
@@ -43,6 +44,20 @@
     setTimeout(scrollBottom, 0);
   }
 
+  const getStoreResults = async (query: string) => {
+    if (!store) return { documents: [], metadatas: [] };
+    try {
+      const storeResult = await store.search(query);
+      return {
+        documents: storeResult.documents,
+        metadatas: [...new Set(storeResult.metadatas)],
+      };
+    } catch (e) {
+      console.log("no DB");
+      return { documents: [], metadatas: [] };
+    }
+  };
+
   const sendMessage = async () => {
     if (input.trim() === "") return;
 
@@ -56,22 +71,28 @@
     let documents: string[] = [];
     let metadatas: string[] = [];
 
-    if (store) {
-      try {
-        const storeResult = await store.search(input);
-        documents = storeResult.documents;
-        metadatas = [...new Set(storeResult.metadatas)];
-      } catch (e) {
-        console.log("no DB");
-      }
-    }
+    const { documents: initialDocuments, metadatas: initialMetadatas } =
+      await getStoreResults(text);
+    documents = initialDocuments;
+    metadatas = initialMetadatas;
+
     input = "";
     history = [...history, { sender: "user", text: text }];
+
+    // Limiter l'historique à 5 derniers messages
+    const recentHistory = history.slice(-5);
+
+    const { documents: summaryDocuments, metadatas: summaryMetadatas } =
+      await getStoreResults(summary);
+    documents = summaryDocuments;
+    metadatas = summaryMetadatas;
+
     // Make API call to Google Generative AI
     const response = await ai.chat({
       text,
       history: [
         { sender: "system", text: $promptSystemStore },
+        { sender: "system", text: summary },
         ...documents.map((text) => {
           return { sender: "system", text };
         }),
@@ -79,7 +100,7 @@
           return { sender: "system", text };
         }),
         { sender: "system", text: `you will respond in ${$language}` },
-        ...history,
+        ...recentHistory,
       ],
       providerName: $providerStore,
       stream: (text) => (streamContent += text),

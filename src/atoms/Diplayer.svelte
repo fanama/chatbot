@@ -1,4 +1,6 @@
 <script lang="ts">
+  import "../assets/themes/prism-atom-dark.css";
+
   import type { MessageEntity } from "../domain/entities/message";
   import { marked } from "marked";
   import clipboard from "../infra/keyboard/clipBoard";
@@ -38,9 +40,7 @@
       {#if isUser}
         {message.text}
       {:else}
-        <div class="markdown-content">
-          {@html parsedContent}
-        </div>
+        {@html parsedContent}
       {/if}
 
       <div class="flex flex-row gap-2 text-right p-2">
@@ -101,56 +101,3 @@
     </div>
   {/if}
 </div>
-
-<style>
-  .message-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  @media (min-width: 768px) {
-    .message-container {
-      flex-direction: row;
-    }
-  }
-
-  .context-container {
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  .markdown-content h1,
-  .markdown-content h2,
-  .markdown-content h3,
-  .markdown-content h4,
-  .markdown-content h5,
-  .markdown-content h6 {
-    margin-top: 1.5em;
-    margin-bottom: 0.5em;
-  }
-
-  .markdown-content p {
-    margin-bottom: 1em;
-  }
-
-  .markdown-content code {
-    background-color: #f5f5f5;
-    padding: 0.2em 0.4em;
-    border-radius: 3px;
-  }
-
-  .markdown-content pre {
-    background-color: #f5f5f5;
-    padding: 1em;
-    border-radius: 3px;
-    overflow-x: auto;
-  }
-
-  .markdown-content blockquote {
-    border-left: 4px solid #ccc;
-    padding-left: 1em;
-    margin-left: 0;
-    color: #666;
-  }
-</style>
