@@ -114,9 +114,10 @@ app.delete("/documents", async (req: Request, res: Response) => {
 
 app.delete("/empty-documents", async (req: Request, res: Response) => {
   try {
-    const { metadatas } = req.body;
+    const { ids, include, metadatas } = req.query;
+    const parsedMetadatas = metadatas ? JSON.parse(metadatas as string) : undefined;
 
-    await chromaDBClient.deleteAllDocuments(metadatas)
+    await chromaDBClient.deleteAllDocuments(parsedMetadatas)
 
     res.status(200).send("success");
   } catch (error) {

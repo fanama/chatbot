@@ -1,14 +1,13 @@
 <script lang="ts">
   import "../assets/themes/prism-atom-dark.css";
-
   import type { MessageEntity } from "../domain/entities/message";
   import { marked } from "marked";
   import clipboard from "../infra/keyboard/clipBoard";
   import VoiceOutput from "./VoiceOutput.svelte";
+  import { onMount } from "svelte";
 
   export let message: MessageEntity;
 
-  // Parse markdown content once when the component is created
   let parsedContent = "";
   let contextDisplayer = false;
   let resultElement: HTMLDivElement;
@@ -24,6 +23,66 @@
   $: parse();
 
   const isUser = message.sender === "user";
+
+  // Fonction pour ajouter les boutons de copie
+  const addCopyButtons = () => {
+    // Attendre que le contenu soit rendu
+    setTimeout(() => {
+      const codeBlocks = document.querySelectorAll(
+        ".message-container pre code"
+      );
+
+      codeBlocks.forEach((codeBlock) => {
+        // Vérifier si le bouton existe déjà
+        if (!codeBlock.nextElementSibling?.classList.contains("copy-button")) {
+          const copyButton = document.createElement("button");
+          copyButton.innerText = "Copier";
+          copyButton.className = "copy-button";
+          copyButton.style.marginLeft = "10px";
+          copyButton.style.padding = "2px 6px";
+          copyButton.style.backgroundColor = "#3b82f6";
+          copyButton.style.color = "white";
+          copyButton.style.borderRadius = "4px";
+          copyButton.style.cursor = "pointer";
+
+          copyButton.onclick = () => {
+            navigator.clipboard
+              .writeText(codeBlock.innerHTML)
+              .then(() => {
+                copyButton.innerText = "Copié!";
+                setTimeout(() => {
+                  copyButton.innerText = "Copier";
+                }, 2000);
+              })
+              .catch((err) => {
+                console.error("Erreur lors de la copie: ", err);
+                copyButton.innerText = "Erreur";
+                setTimeout(() => {
+                  copyButton.innerText = "Copier";
+                }, 2000);
+              });
+          };
+
+          // Ajouter le bouton après le bloc de code
+          codeBlock.after(copyButton);
+        }
+      });
+    }, 100); // Petit délai pour s'assurer que le contenu est rendu
+  };
+
+  // Fonction pour observer les changements dans le DOM
+  const observeDOMChanges = () => {
+    const observer = new MutationObserver(addCopyButtons);
+    observer.observe(resultElement, {
+      childList: true,
+      subtree: true,
+    });
+  };
+
+  onMount(() => {
+    addCopyButtons();
+    observeDOMChanges();
+  });
 </script>
 
 <div
@@ -32,10 +91,10 @@
   <!-- Résultat principal -->
   <div
     bind:this={resultElement}
-    class={`message flex items-start space-x-4 mb-4 ${isUser ? "justify-end" : "justify-start"} flex-1`}
+    class={`message flex items-start space-x-4 mb-4 ${isUser ? "justify-end" : "justify-start"} flex-1 `}
   >
     <div
-      class="bg-gradient-to-br from-blue-200 to-white text-blue-900 p-4 rounded-lg w-full overflow-auto h-full"
+      class="bg-gradient-to-br flex flex-col from-blue-200 to-white text-blue-900 p-4 rounded-lg overflow-auto h-full"
     >
       {#if isUser}
         {message.text}
@@ -83,6 +142,10 @@
             class="px-2 py-1 bg-blue-600 text-white rounded flex items-center text-xs"
             on:click={() => (contextDisplayer = !contextDisplayer)}
             >context</button
+          >
+          <button
+            class="px-2 py-1 bg-blue-600 text-white rounded flex items-center text-xs"
+            on:click={message.insertToStore}>enregistrer</button
           >
         {/if}
       </div>

@@ -3,6 +3,7 @@ export interface MessageEntity {
   text: string;
   provider?: string;
   context?: string[];
+  insertToStore?: () => void
 }
 
 export interface Input {

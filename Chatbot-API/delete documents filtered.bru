@@ -1,0 +1,23 @@
+meta {
+  name: delete documents filtered
+  type: http
+  seq: 9
+}
+
+delete {
+  url: http://localhost:3000/empty-documents
+  body: none
+  auth: inherit
+}
+
+body:json {
+  {
+    "ids": [],
+    "include": []
+  }
+}
+
+body:multipart-form {
+  ids: []
+  include: []
+}

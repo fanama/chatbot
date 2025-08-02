@@ -58,6 +58,20 @@
     }
   };
 
+  const insertToStore = async (input: string, response: string) => {
+    if (!store) return { documents: [], metadatas: [] };
+    try {
+      await store.add(`input:${input}=>output:${response}`, {
+        input,
+        response,
+      });
+      return {};
+    } catch (e) {
+      console.log("no DB");
+      return { documents: [], metadatas: [] };
+    }
+  };
+
   const sendMessage = async () => {
     if (input.trim() === "") return;
 
@@ -114,6 +128,10 @@
         text: response.text,
         provider: response.provider,
         context: [...metadatas, ...documents],
+        insertToStore: () => {
+          insertToStore(text, response.text);
+          alert("ajouté !");
+        },
       },
     ];
 
