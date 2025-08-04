@@ -3,6 +3,7 @@
   import { Embedding } from "../infra/storage/embedding";
   import Uploader from "../atoms/Uploader.svelte";
 
+  let fileName: string = "";
   let chunks: string[] = [];
   let titles: string[] = [];
 
@@ -64,7 +65,11 @@ ${titles.join("\n")}
 
     for (const chunk of chunks) {
       const index = chunks.indexOf(chunk);
-      await addDoc(chunk, { context, page: `page : ${chunks.indexOf(chunk)}` });
+      await addDoc(chunk, {
+        context,
+        fileName,
+        page: `page : ${chunks.indexOf(chunk)}`,
+      });
       percent = index / chunks.length;
     }
 
@@ -77,7 +82,7 @@ ${titles.join("\n")}
   class="h-screen w-screen grid grid-cols-2 gap-4 p-4 bg-gradient-to-br from-blue-800 to-white"
 >
   <!-- Left Section: Uploader -->
-  <Uploader bind:chunks bind:titles />
+  <Uploader bind:fileName bind:chunks bind:titles />
 
   <!-- Right Section: Search -->
   <div

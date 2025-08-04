@@ -15,6 +15,8 @@
   import VoiceInput from "../atoms/VoiceInput.svelte";
   import { Embedding } from "../infra/storage/embedding";
   import BasicDiplayer from "../atoms/BasicDiplayer.svelte";
+  import Uploader from "../atoms/Uploader.svelte";
+  import Modal from "../atoms/Modal.svelte";
 
   const historyStorage = new LocalStorage<MessageEntity>("history", []);
 
@@ -25,6 +27,9 @@
   let loading: boolean = false;
   let streamContent = "";
   let summary = "";
+  let fileName: string = "";
+
+  let chunks: string[] = [];
 
   let messageContainer: HTMLDivElement;
 
@@ -113,6 +118,9 @@
         ...metadatas.map((text) => {
           return { sender: "system", text };
         }),
+        ...chunks.map((chunk) => {
+          return { sender: "system", text: chunk };
+        }),
         { sender: "system", text: `you will respond in ${$language}` },
         ...recentHistory,
       ],
@@ -191,7 +199,11 @@
     </svg>
   </button>
 </div>
+
 <div class="flex flex-row w-full items-stretch p-6">
+  <Modal title={fileName || "load file"} className="bg-blue-500 text-white">
+    <Uploader bind:fileName bind:chunks hide={true} />
+  </Modal>
   <textarea
     bind:value={input}
     placeholder="Type your message..."
@@ -205,9 +217,10 @@
   ></textarea>
 
   <VoiceInput bind:transcript={input} />
+
   <button
     on:click={sendMessage}
-    class="flex items-center justify-center bg-blue-600 text-gray-100 p-3 rounded-r-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-600 font-mono"
+    class="flex items-center justify-center bg-blue-600 text-gray-100 p-3 shadow-md rounded-r-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-600 font-mono"
   >
     <svg
       class="w-6 h-6 mr-2"

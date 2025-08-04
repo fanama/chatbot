@@ -1,17 +1,18 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import pdf2md from "@opendocsg/pdf2md";
   let fileInput: HTMLInputElement;
   let textContent: string = "";
+  export let fileName = "";
   export let chunks: string[] = [];
   export let titles: string[] = [];
-
+  export let hide: boolean = false;
   interface Chunk {
+    fileName: string;
     title: string;
     content: string[];
   }
 
-  function markdownToChunks(markdown: string): Chunk[] {
+  function markdownToChunks(fileName: string, markdown: string): Chunk[] {
     const lines = markdown.split("\n").filter((line) => line.trim() !== "");
 
     let chunks: Chunk[] = [];
@@ -24,6 +25,7 @@
           chunks.push(currentChunk);
         }
         currentChunk = {
+          fileName,
           title: line,
           content: [],
         };
@@ -48,6 +50,7 @@
     fileInput = form.querySelector('input[type="file"]') as HTMLInputElement;
     const file = fileInput.files?.[0];
     if (file) {
+      fileName = file.name;
       if (file.type === "application/pdf") {
         formData.append("file", file);
         await processPdfFile(file);
@@ -63,7 +66,7 @@
   const processTextFile = async (file: File) => {
     const text = await file.text();
     textContent = text;
-    splitTextIntoChunks(text);
+    splitTextIntoChunks(file.name, text);
   };
 
   const processPdfFile = async (file: File) => {
@@ -76,7 +79,7 @@
         }
         let arrayBuffer = event.target.result;
         const markdown = await pdf2md(arrayBuffer);
-        splitTextIntoChunks(markdown);
+        splitTextIntoChunks(file.name, markdown);
       };
 
       reader.readAsArrayBuffer(file);
@@ -86,17 +89,17 @@
     }
   };
 
-  const splitTextIntoChunks = (text: string) => {
-    chunks = markdownToChunks(text).map((chunk) => {
-      return `${chunk.title} \n${chunk.content.join("\n")}`;
+  const splitTextIntoChunks = (fileName: string, text: string) => {
+    chunks = markdownToChunks(fileName, text).map((chunk) => {
+      return `#${fileName}\n\n ${chunk.title} \n${chunk.content.join("\n")}`;
     });
   };
 </script>
 
-<main class="p-8 overflow-scroll">
-  <h1 class="text-2xl font-bold mb-4 text-white">Upload</h1>
+<main class="p-8 bg-blue-500 bg-white text-black w-full h-fit">
+  <h1 class="text-2xl font-bold mb-4">Upload File</h1>
 
-  <form on:submit={onSubmit} class="flex flex-col gap-4">
+  <form on:submit={onSubmit} class="flex flex-col gap-4 h-full">
     <input
       type="file"
       name="video"
@@ -113,11 +116,11 @@
       type="submit"
       class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-green-300 transition duration-300"
     >
-      Convert to Text
+      Load
     </button>
   </form>
 
-  {#if chunks.length > 0}
+  {#if chunks.length > 0 && !hide}
     <div
       class="mt-4 h-screen overflow-y-scroll bg-gray-100 flex flex-col gap-2"
     >
@@ -125,6 +128,8 @@
         <pre class="text-blue-600 p-2 rounded-lg max-w-96">{chunk}</pre>
       {/each}
     </div>
+  {:else if chunks.length > 0}
+    Chargé !
   {:else}
     <p class="text-gray-500 mt-4">No chunks available.</p>
   {/if}

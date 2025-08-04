@@ -9,7 +9,7 @@
 </script>
 
 <button
-  class={`w-full p-2 rounded-xs cursor-pointer ${className}`}
+  class={`p-2 rounded-xs cursor-pointer ${className}`}
   on:click={toogleModal}>{title}</button
 >
 
