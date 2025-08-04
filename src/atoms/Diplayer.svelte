@@ -46,21 +46,7 @@
           copyButton.style.cursor = "pointer";
 
           copyButton.onclick = () => {
-            navigator.clipboard
-              .writeText(codeBlock.innerHTML)
-              .then(() => {
-                copyButton.innerText = "Copié!";
-                setTimeout(() => {
-                  copyButton.innerText = "Copier";
-                }, 2000);
-              })
-              .catch((err) => {
-                console.error("Erreur lors de la copie: ", err);
-                copyButton.innerText = "Erreur";
-                setTimeout(() => {
-                  copyButton.innerText = "Copier";
-                }, 2000);
-              });
+            clipboard.copy(codeBlock.innerHTML);
           };
 
           // Ajouter le bouton après le bloc de code
