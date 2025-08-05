@@ -94,9 +94,15 @@
       return `#${fileName}\n\n ${chunk.title} \n${chunk.content.join("\n")}`;
     });
   };
+
+  function unload() {
+    fileName = "";
+    chunks = [];
+    titles = [];
+  }
 </script>
 
-<main class="p-8 bg-blue-500 bg-white text-black w-full h-fit">
+<main class="p-8 bg-white text-black w-full h-fit space-y-4">
   <h1 class="text-2xl font-bold mb-4">Upload File</h1>
 
   <form on:submit={onSubmit} class="flex flex-col gap-4 h-full">
@@ -112,12 +118,14 @@
       hover:file:bg-blue-100
       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
     />
-    <button
-      type="submit"
-      class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-green-300 transition duration-300"
-    >
-      Load
-    </button>
+    {#if chunks.length == 0}
+      <button
+        type="submit"
+        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-green-300 transition duration-300"
+      >
+        Load
+      </button>
+    {/if}
   </form>
 
   {#if chunks.length > 0 && !hide}
@@ -129,7 +137,13 @@
       {/each}
     </div>
   {:else if chunks.length > 0}
-    Chargé !
+    <button
+      class="px-4 py-2 w-full bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-red-300 transition duration-300"
+      on:click={unload}
+    >
+      Unload
+    </button>
+    <div>Chargé !</div>
   {:else}
     <p class="text-gray-500 mt-4">No chunks available.</p>
   {/if}

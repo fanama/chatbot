@@ -201,7 +201,10 @@
 </div>
 
 <div class="flex flex-row w-full items-stretch p-6">
-  <Modal title={fileName || "load file"} className="bg-blue-500 text-white">
+  <Modal
+    title={fileName || "load file"}
+    className="bg-blue-500 text-white max-w-32 overflow-hidden text-ellipsis whitespace-nowrap"
+  >
     <Uploader bind:fileName bind:chunks hide={true} />
   </Modal>
   <textarea

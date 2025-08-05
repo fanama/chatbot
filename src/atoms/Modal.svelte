@@ -19,7 +19,7 @@
     on:click={toogleModal}
   >
     <div
-      class="p-2 rounded-lg max-w-full h-full bg-blue-900"
+      class="p-2 rounded-lg max-w-full h-full bg-blue-500"
       on:click|stopPropagation
     >
       <div class="flex p-1 justify-end">
@@ -31,7 +31,7 @@
         </button>
       </div>
       {#if title}
-        <h1 class="text-3xl font-bold text-white">{title}</h1>
+        <h1 class="text-2xl font-bold text-white p-2">{title}</h1>
       {/if}
       <slot></slot>
     </div>
