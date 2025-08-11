@@ -5,9 +5,13 @@ meta {
 }
 
 delete {
-  url: http://localhost:3000/empty-documents
+  url: {{baseUrl}}/empty-documents?metadatas={"app":"demo"}
   body: none
   auth: inherit
+}
+
+params:query {
+  metadatas: {"app":"demo"}
 }
 
 body:json {
