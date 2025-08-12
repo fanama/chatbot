@@ -1,14 +1,17 @@
 # Chatbot
 
+## Description
+
+This project is an innovative chatbot using advanced language models to provide relevant and contextual responses. It combines the capabilities of Google Studio and Mistral to offer an optimal user experience.
+
 ## Installation
 
 ### Prerequisites
 
 - Python 3.x
-- chromadb
 - Bun.js
 
-### Steps
+### Installation Steps
 
 1. **Clone the repository:**
 
@@ -16,10 +19,11 @@
    git clone git@github.com:fanama/chatbot.git
    ```
 
-- or
-  ```bash
-  git clone https://github.com/fanama/chatbot.git
-  ```
+   or
+
+   ```bash
+   git clone https://github.com/fanama/chatbot.git
+   ```
 
 2. **Install Bun.js dependencies:**
 
@@ -45,42 +49,27 @@
 5. **Start the development server:**
 
    ```bash
-   bun run dev
+   uv run server.py
    ```
 
-## Server bun
+## Features
 
-```bash
-bun proxy.ts
-```
+- Integration with Google Studio for natural language processing
+- Utilization of Mistral for response enhancement
+- Intuitive and responsive user interface
+- Advanced conversational context management
 
-## init chroma DB
+## Contribution
 
-- install
+Contributions are welcome! Please open an issue to discuss significant changes before submitting a pull request.
 
-```sh
-pip install chromadb
-```
+## License
 
-- launch
+This project is licensed under the MIT License. See the LICENSE file for more details.
 
-```sh
-chroma run --path ./getting-started
-```
+## Contact
 
-## Lanch the whole app
+For any questions or suggestions, please contact:
 
-To launch the app you will need 3 terminals. One to launch the bun server, one for the database and one for the python server
-
-- bun
-
-```sh
-bun proxy.ts
-```
-
-- database
-
-```sh
-source .venv/bin/activate  # On Windows use `venv\Scripts\activate`
-chroma run --path ./getting-started
-```
+- Email: f.rakotoasimbola@gmail.com
+- LinkedIn: [Fana Rakotoasimbola](https://www.linkedin.com/in/fanama/)
