@@ -1,12 +1,17 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from backend.vectoreStoreClient.chromaDBclient import ChromaDBClient
+from backend.youtube.youtubeToText import Youtube
+
 import json
+
 
 app = Flask(__name__)
 CORS(app)
 
 chroma_db_client = ChromaDBClient("my_collection")
+transcript = Youtube()
+
 
 @app.route('/')
 def index():
@@ -50,12 +55,28 @@ def query_collection():
         n_results = data.get('nResults', 10)
         include = data.get('include',[])
         metadatas = data.get('metadatas',None)
+
+        text = None
+
+        for t in query_texts[0].split(" "):
+            if t.startswith("http"):
+                print("HTTP : " , t)
+                text = transcript.generateText(t)
+        
+
+
         results = chroma_db_client.query_collection(
             query_texts=query_texts,
             n_results=n_results,
             include=include,
             metadatas=metadatas
         )
+
+        if text is not None:
+            if "metadatas" in results and results["metadatas"]:
+                # Attach as a top-level custom value to the first result group
+                results["metadatas"][0].append({"transcript": text})
+
         
         return jsonify(results), 200
     except Exception as e:

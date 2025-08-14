@@ -40,8 +40,8 @@ class ChromaDBClient:
         )
 
         # Debug: show stored data
-        results = self.collection.get(include=[ "documents", "metadatas", "embeddings"])
-        print("📥 Document added. Current store:", results)
+        # results = self.collection.get(include=[ "documents", "metadatas", "embeddings"])
+        # print("📥 Document added. Current store:", results)
 
     def query_collection(
     self,

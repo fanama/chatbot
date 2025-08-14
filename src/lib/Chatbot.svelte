@@ -101,11 +101,6 @@
     // Limiter l'historique à 5 derniers messages
     const recentHistory = history.slice(-5);
 
-    const { documents: summaryDocuments, metadatas: summaryMetadatas } =
-      await getStoreResults(summary);
-    documents = summaryDocuments;
-    metadatas = summaryMetadatas;
-
     // Make API call to Google Generative AI
     const response = await ai.chat({
       text,
