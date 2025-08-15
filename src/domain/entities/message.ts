@@ -8,6 +8,7 @@ export interface MessageEntity {
 
 export interface Input {
   text: string;
+  image?: string;
   history?: MessageEntity[];
   model?: string;
   providerName?: string;

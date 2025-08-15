@@ -9,7 +9,6 @@ export class MistralAI {
   }
 
   async chat({
-    text,
     history = [],
     stream = (chunk: string) => console.log({ chunk })
   }: Input): Promise<Response> {
@@ -58,6 +57,8 @@ export class MistralAI {
       throw new Error(JSON.stringify(error));
     }
   }
+
+
 
   private async readStream(
     reader: ReadableStreamDefaultReader<Uint8Array>,

@@ -51,13 +51,26 @@
     const file = fileInput.files?.[0];
     if (file) {
       fileName = file.name;
+
       if (file.type === "application/pdf") {
         formData.append("file", file);
         await processPdfFile(file);
-      } else if (file.type === "text/plain" || file.type === "text/markdown") {
+      } else if (
+        file.type === "text/plain" ||
+        file.type === "text/markdown" ||
+        file.type.startsWith("text/") || // Covers many code/text files
+        fileName.endsWith(".ts") || // TypeScript files
+        fileName === "dockerfile" || // Dockerfile (often no extension)
+        fileName.endsWith(".dockerfile") || // Sometimes with extension
+        fileName.endsWith(".yml") ||
+        fileName.endsWith(".yaml") ||
+        fileName === ".dockerignore"
+      ) {
         await processTextFile(file);
       } else {
-        alert("Unsupported file type. Please upload a PDF or text file.");
+        alert(
+          "Unsupported file type. Please upload a PDF, text, or code file."
+        );
         console.log(file.type);
       }
     }
