@@ -21,12 +21,12 @@
   const historyStorage = new LocalStorage<MessageEntity>("history", []);
 
   let store: Embedding | null = null;
+  let useStore = true; // Nouvelle variable pour la checkbox
 
   let history: MessageEntity[] = historyStorage.getAll();
   let input: string = "";
   let loading: boolean = false;
   let streamContent = "";
-  let summary = "";
   let fileName: string = "";
 
   let chunks: string[] = [];
@@ -50,7 +50,7 @@
   }
 
   const getStoreResults = async (query: string) => {
-    if (!store) return { documents: [], metadatas: [] };
+    if (!store || !useStore) return { documents: [], metadatas: [] };
     try {
       const storeResult = await store.search(query);
       return {
@@ -106,7 +106,6 @@
       text,
       history: [
         { sender: "system", text: $promptSystemStore },
-        { sender: "system", text: summary },
         ...documents.map((text) => {
           return { sender: "system", text };
         }),
@@ -201,6 +200,12 @@
     className="bg-blue-500 text-white max-w-32 overflow-hidden text-ellipsis whitespace-nowrap"
   >
     <Uploader bind:fileName bind:chunks hide={true} />
+    {#if store}
+      <div class="flex items-center mb-4">
+        <input type="checkbox" bind:checked={useStore} class="mr-2" />
+        <div class="text-white">Recherche documentaire</div>
+      </div>
+    {/if}
   </Modal>
   <textarea
     bind:value={input}

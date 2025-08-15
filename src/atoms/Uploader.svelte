@@ -18,9 +18,11 @@
     let chunks: Chunk[] = [];
     let currentChunk: Chunk | null = null;
 
+    let hasTitle = false;
+
     for (const line of lines) {
       if (line.startsWith("#")) {
-        titles = [...titles, line];
+        hasTitle = true;
         if (currentChunk !== null) {
           chunks.push(currentChunk);
         }
@@ -32,6 +34,13 @@
       } else {
         if (currentChunk !== null) {
           currentChunk.content.push(line);
+        } else {
+          // If no title yet, start a chunk with null title (temporary)
+          currentChunk = {
+            fileName,
+            title: fileName,
+            content: [line],
+          };
         }
       }
     }
@@ -39,6 +48,18 @@
     if (currentChunk !== null) {
       chunks.push(currentChunk);
     }
+
+    // If no title exists in the whole file, merge into a single chunk
+    if (!hasTitle && chunks.length > 1) {
+      return [
+        {
+          fileName,
+          title: fileName,
+          content: chunks.flatMap((c) => c.content),
+        },
+      ];
+    }
+
     return chunks;
   }
 
@@ -60,10 +81,12 @@
         file.type === "text/markdown" ||
         file.type.startsWith("text/") || // Covers many code/text files
         fileName.endsWith(".ts") || // TypeScript files
+        fileName.endsWith(".svelte") || // TypeScript files
         fileName === "dockerfile" || // Dockerfile (often no extension)
         fileName.endsWith(".dockerfile") || // Sometimes with extension
         fileName.endsWith(".yml") ||
         fileName.endsWith(".yaml") ||
+        fileName.endsWith(".md") ||
         fileName === ".dockerignore"
       ) {
         await processTextFile(file);
