@@ -56,12 +56,7 @@ def query_collection():
         include = data.get('include',[])
         metadatas = data.get('metadatas',None)
 
-        text = None
-
-        for t in query_texts[0].split(" "):
-            if t.startswith("http"):
-                print("HTTP : " , t)
-                text = transcript.generateText(t)
+        
         
 
 
@@ -72,10 +67,15 @@ def query_collection():
             metadatas=metadatas
         )
 
-        if text is not None:
-            if "metadatas" in results and results["metadatas"]:
-                # Attach as a top-level custom value to the first result group
+        for t in query_texts[0].split(" "):
+            if "metadatas" not in results or not results["metadatas"]:
+                continue
+            if t.startswith("http") and "youtube.com" in t:
+                text = transcript.generateText(t)
                 results["metadatas"][0].append({"transcript": text})
+            elif t.startswith("http"):
+                text = transcript.generateMArkdown(t)
+                results["metadatas"][0].append({"web page": text})
 
         
         return jsonify(results), 200
