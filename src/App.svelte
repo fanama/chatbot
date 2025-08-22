@@ -60,43 +60,50 @@
   };
 </script>
 
-<main
-  class="h-screen bg-gradient-to-br from-blue-800 to-white flex flex-col items-center"
->
+<main class="h-screen bg-gradient-to-br from-blue-800 to-white flex flex-col">
   {#if page != pages.HOME}
-    <nav class="bg-blue-900 p-4 w-full">
-      <div class="container mx-auto flex justify-between items-center">
+    <nav class="bg-blue-900 p-4 w-full flex">
+      <div
+        class="container w-full mx-auto flex flex-col md:flex-row items-center justify-between"
+      >
         <button
           type="button"
           class="text-3xl font-bold text-white bg-transparent border-none cursor-pointer p-0 m-0 focus:outline-none"
           on:click={() => setPage(pages.HOME)}
           aria-label="Retour à l'accueil"
         >
-          {import.meta.env.VITE_TITLE || "Demo"}
+          {import.meta.env.VITE_TITLE || "Démo"}
         </button>
-        <div class="flex text-white justify-between gap-2">
+        <div class="flex md:flex-row text-white w-full gap-2 justify-center">
           <button
-            class={`w-full p-2 rounded-xs cursor-pointer text-blue-600 bg-white`}
+            class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
+            on:click={() => setPage(pages.HOME)}>Accueil</button
+          >
+          <button
+            class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
             on:click={() => setPage(pages.CHATBOT)}>Chatbot</button
           >
           {#if $userStore?.role == ROLES.ADMIN}
             <button
-              class={`w-full p-2 rounded-xs cursor-pointer text-blue-600 bg-white`}
-              on:click={() => setPage(pages.SETTINGS)}>Settings</button
+              class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
+              on:click={() => setPage(pages.SETTINGS)}>Paramètres</button
             >
           {/if}
 
           {#if !error}
+            {#if $userStore?.role == ROLES.ADMIN}
+              <button
+                class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
+                on:click={() => setPage(pages.DOCUMENTS)}>Documents</button
+              >
+            {/if}
+
             <button
-              class={`w-full p-2 rounded-xs cursor-pointer text-blue-600 bg-white`}
-              on:click={() => setPage(pages.DOCUMENTS)}>Documents</button
-            >
-            <button
-              class={`w-full p-2 rounded-xs cursor-pointer text-blue-600 bg-white`}
+              class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
               on:click={() => setPage(pages.PDF)}>Guide Utilisateur</button
             >
             <button
-              class={`w-full p-2 rounded-xs cursor-pointer text-blue-600 bg-white`}
+              class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
               on:click={() => setPage(pages.VIDEO)}>Guide Vidéo</button
             >
           {/if}
@@ -106,22 +113,22 @@
   {/if}
 
   {#if page == pages.HOME}
-    <div class="flex flex-row w-full h-full">
-      <Login {login} />
-
+    <div class="flex flex-col w-full h-full">
       <Accueil chat={login} />
+
+      <Login {login} />
     </div>
   {:else if page == pages.SETTINGS}
     <PromptManager />
   {:else if page == pages.DOCUMENTS}
     <Document />
   {:else if page == pages.PDF}
-    <div class="max-h-3/4 overflow-scroll">
+    <div class="max-h-3/4 overflow-scroll w-full">
       <PdfViewer showBorder={false} scale={1.5} url={Guide} />
     </div>
   {:else if page == pages.VIDEO}
-    <div class="max-h-3/4 flex justify-center">
-      <video class="w-[700px]" controls>
+    <div class="max-h-3/4 flex justify-center w-full">
+      <video class="w-full max-w-[700px]" controls>
         <track kind="captions" />
         <source src={Video} type="video/mp4" />
       </video>
@@ -129,6 +136,8 @@
   {:else if (page = pages.CHATBOT)}
     <Chatbot />
   {/if}
-
   <Footer />
 </main>
+{#if page == pages.HOME}
+  <Footer />
+{/if}

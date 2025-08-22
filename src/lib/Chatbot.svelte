@@ -161,84 +161,104 @@
   });
 </script>
 
-<div
-  bind:this={messageContainer}
-  class="h-full w-full md:w-3/4 p-2 overflow-y-auto rounded-b-lg p-4 mb-4 text-blue-200 font-mono"
->
-  {#each history as message}
-    <Displayer {message} />
-  {/each}
-  {#if loading}
-    <BasicDiplayer message={streamContent} />
-  {/if}
-</div>
-<div class="flex flex-row justify-end p-2 gap-6 w-full">
-  <button
-    on:click={() => {
-      history = [];
-    }}
-    class=" bg-red-700 cursor-pointer text-gray-100 p-3 rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 border border-red-600 flex justify-center items-center font-mono"
+<div class="flex flex-col h-full w-full overflow-y-scroll p-2">
+  <!-- Message Container -->
+  <div
+    bind:this={messageContainer}
+    class="h-full w-full p-4 mb-4 text-blue-200 font-mono overflow-y-auto rounded-b-lg"
   >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="h-5 w-5"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-    >
-      <path
-        fill-rule="evenodd"
-        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-        clip-rule="evenodd"
-      />
-    </svg>
-  </button>
-</div>
+    <!-- Message History -->
+    {#each history as message}
+      <Displayer {message} />
+    {/each}
 
-<div class="flex flex-row w-full items-stretch p-6">
-  <Modal
-    title={fileName || "load file"}
-    className="bg-blue-500 text-white max-w-32 overflow-hidden text-ellipsis whitespace-nowrap"
-  >
-    <Uploader bind:fileName bind:chunks hide={true} />
-    {#if store}
-      <div class="flex items-center mb-4">
-        <input type="checkbox" bind:checked={useStore} class="mr-2" />
-        <div class="text-white">Recherche documentaire</div>
-      </div>
+    <!-- Loading Indicator -->
+    {#if loading}
+      <BasicDiplayer message={streamContent} />
     {/if}
-  </Modal>
-  <textarea
-    bind:value={input}
-    placeholder="Type your message..."
-    class="p-3 flex-grow rounded-l-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gradient-to-br from-gray-200 to-white text-blue-600 font-mono"
-    on:keydown={(e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault(); // Empêche le comportement par défaut (aller à la ligne)
-        sendMessage();
-      }
-    }}
-  ></textarea>
+  </div>
 
-  <VoiceInput bind:transcript={input} />
+  <!-- Controls Section -->
+  <div class="flex flex-col gap-2 w-full">
+    <!-- Clear History Button -->
+    <div class="flex flex-row justify-end p-2 gap-2">
+      <button
+        on:click={() => {
+          history = [];
+        }}
+        class="bg-red-700 cursor-pointer text-gray-100 p-2 rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 border border-red-600 flex justify-center items-center font-mono text-xs"
+        title="Clear conversation history"
+      >
+        <svg
+          xmlns="http://www.w3.org/2009/svg"
+          class="h-4 w-4"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </button>
+    </div>
 
-  <button
-    on:click={sendMessage}
-    class="flex items-center justify-center bg-blue-600 text-gray-100 p-3 shadow-md rounded-r-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-600 font-mono"
-  >
-    <svg
-      class="w-6 h-6 mr-2"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-      ></path>
-    </svg>
-    Send
-  </button>
+    <!-- Input Controls -->
+    <div class="flex flex-col w-full p-2">
+      <!-- File Upload Modal -->
+      <Modal
+        title={fileName || "load file"}
+        className="bg-blue-500 text-white max-w-32 overflow-hidden text-ellipsis whitespace-nowrap text-xs"
+      >
+        <Uploader bind:fileName bind:chunks hide={true} />
+        {#if store}
+          <div class="flex items-center mb-2">
+            <input type="checkbox" bind:checked={useStore} class="mr-2" />
+            <div class="text-white text-xs">Recherche documentaire</div>
+          </div>
+        {/if}
+      </Modal>
+
+      <!-- Message Input -->
+      <div class="flex flex-row w-full items-stretch">
+        <textarea
+          bind:value={input}
+          placeholder="Type your message..."
+          class="p-2 flex-grow rounded-l-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gradient-to-br from-gray-200 to-white text-blue-600 font-mono text-sm"
+          on:keydown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage();
+            }
+          }}
+          aria-label="Message input"
+        ></textarea>
+
+        <VoiceInput bind:transcript={input} />
+
+        <!-- Send Button -->
+        <button
+          on:click={sendMessage}
+          class="flex items-center justify-center bg-blue-600 text-gray-100 p-2 shadow-md rounded-r-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-600 font-mono text-xs"
+          title="Send message"
+        >
+          <svg
+            class="w-4 h-4 mr-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+            ></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

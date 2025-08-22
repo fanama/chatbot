@@ -5,6 +5,7 @@
   import clipboard from "../infra/keyboard/clipBoard";
   import VoiceOutput from "./VoiceOutput.svelte";
   import { onMount } from "svelte";
+  import { userStore } from "../lib/store";
 
   export let message: MessageEntity;
 
@@ -80,10 +81,10 @@
     class={`message flex items-start space-x-4 mb-4 ${isUser ? "justify-end" : "justify-start"} flex-1 `}
   >
     <div
-      class="bg-gradient-to-br flex flex-col from-blue-200 to-white text-blue-900 p-4 rounded-lg overflow-auto h-full"
+      class="bg-gradient-to-br flex flex-col from-blue-200 to-white text-blue-900 p-4 rounded-lg overflow-auto"
     >
       {#if isUser}
-        {message.text}
+        <div>{message.text}</div>
       {:else}
         {@html parsedContent}
       {/if}
@@ -129,10 +130,12 @@
             on:click={() => (contextDisplayer = !contextDisplayer)}
             >context</button
           >
-          <button
-            class="px-2 py-1 bg-blue-600 text-white rounded flex items-center text-xs"
-            on:click={message.insertToStore}>enregistrer</button
-          >
+          {#if $userStore?.role == "ADMIN"}
+            <button
+              class="px-2 py-1 bg-blue-600 text-white rounded flex items-center text-xs"
+              on:click={message.insertToStore}>enregistrer</button
+            >
+          {/if}
         {/if}
       </div>
     </div>

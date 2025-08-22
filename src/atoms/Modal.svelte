@@ -19,7 +19,7 @@
     on:click={toogleModal}
   >
     <div
-      class="p-2 rounded-lg max-w-full h-full bg-blue-500"
+      class="p-2 rounded-lg max-w-full h-full bg-blue-900"
       on:click|stopPropagation
     >
       <div class="flex p-1 justify-end">

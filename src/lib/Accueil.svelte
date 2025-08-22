@@ -2,7 +2,7 @@
   export let chat: () => void;
 </script>
 
-<main class="h-full w-full bg-gray-50">
+<main class="w-full bg-gray-50">
   <section
     class="hero py-24 px-4 text-center bg-gradient-to-r from-indigo-600 to-indigo-800 text-white"
   >
@@ -18,15 +18,15 @@
     </button>
   </section>
 
-  <section class="features py-16 px-4">
+  <section class=" py-16 px-4">
     <h2 class="text-3xl font-bold text-center mb-16 text-indigo-800">
       Nos fonctionnalités
     </h2>
     <div
-      class="feature-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"
     >
       <div
-        class="feature p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1"
+        class=" p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1"
       >
         <div class="text-indigo-600 mb-4">
           <svg
@@ -52,7 +52,7 @@
         </p>
       </div>
       <div
-        class="feature p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1"
+        class=" p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1"
       >
         <div class="text-indigo-600 mb-4">
           <svg
@@ -76,7 +76,7 @@
         <p class="text-gray-600">Notre IA s'améliore avec chaque interaction</p>
       </div>
       <div
-        class="feature p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1"
+        class=" p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1"
       >
         <div class="text-indigo-600 mb-4">
           <svg

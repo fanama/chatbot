@@ -29,58 +29,66 @@
   }
 </script>
 
-<div class="h-full bg-blue-900 pt-80">
-  <div class="w-full p-8 bg-blue-800">
-    {#if error}
-      <div
-        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
-        role="alert"
-      >
-        <span class="block sm:inline">{error}</span>
-      </div>
-    {/if}
-    <button
-      type="button"
-      class="text-3xl font-bold text-white bg-transparent border-none cursor-pointer p-0 m-0 focus:outline-none"
-      aria-label="Retour à l'accueil"
+<div
+  class="bg-white bg-opacity-10 backdrop-filter backdrop-blur-md rounded-lg shadow-xl w-full p-6 md:p-8"
+>
+  {#if error}
+    <div
+      class="bg-red-100 bg-opacity-20 border border-red-400 text-red-300 px-4 py-3 rounded mb-4 text-sm"
+      role="alert"
     >
-      {import.meta.env.VITE_TITLE || "Demo"}
-    </button>
+      <span class="block">{error}</span>
+    </div>
+  {/if}
 
-    <form class="space-y-6" on:submit|preventDefault={handleLogin}>
-      <h2 class="text-left text-2xl text-white font-bold mb-6">Connexion</h2>
+  <form class="space-y-4 md:space-y-6" on:submit|preventDefault={handleLogin}>
+    <div class="text-center mb-6">
+      <h2 class="text-2xl md:text-3xl font-bold">Connexion</h2>
+      <p class="text-opacity-80 mt-1">Connectez-vous à votre compte</p>
+    </div>
 
-      <div class="mb-4">
+    <div class="space-y-4">
+      <div>
+        <label
+          for="username"
+          class="block text-sm font-medium text-white text-opacity-80 mb-1"
+          >Nom d'utilisateur</label
+        >
         <input
           id="username"
           name="username"
           required
-          class="appearance-none bg-white rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-          placeholder="Username"
+          class="w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+          placeholder="Entrez votre nom d'utilisateur"
           bind:value={username}
         />
       </div>
 
-      <div class="mb-4">
+      <div>
+        <label
+          for="password"
+          class="block text-sm font-medium text-white text-opacity-80 mb-1"
+          >Mot de passe</label
+        >
         <input
           id="password"
           name="password"
           type="password"
           required
-          class="appearance-none bg-white rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-          placeholder="Password"
+          class="w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+          placeholder="Entrez votre mot de passe"
           bind:value={password}
         />
       </div>
+    </div>
 
-      <div>
-        <button
-          type="submit"
-          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Se connecter
-        </button>
-      </div>
-    </form>
-  </div>
+    <div>
+      <button
+        type="submit"
+        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
+      >
+        Se connecter
+      </button>
+    </div>
+  </form>
 </div>
