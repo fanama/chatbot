@@ -6,7 +6,9 @@
   <section
     class="hero py-24 px-4 text-center bg-gradient-to-r from-indigo-600 to-indigo-800 text-white"
   >
-    <h1 class="text-4xl md:text-5xl font-bold mb-6">Bienvenue !</h1>
+    <h1 class="text-4xl md:text-5xl font-bold mb-6">
+      {import.meta.env.VITE_TITLE || "Démo"}
+    </h1>
     <p class="text-xl md:text-2xl mb-10 max-w-2xl mx-auto">
       Votre assistant conversationnel intelligent
     </p>

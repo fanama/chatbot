@@ -165,7 +165,7 @@
   <!-- Message Container -->
   <div
     bind:this={messageContainer}
-    class="h-full w-full p-4 mb-4 text-blue-200 font-mono overflow-y-auto rounded-b-lg"
+    class="min-h-[60vh] w-full p-4 mb-4 text-blue-200 font-mono overflow-y-auto rounded-b-lg"
   >
     <!-- Message History -->
     {#each history as message}

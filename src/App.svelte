@@ -14,21 +14,10 @@
   import { userStore } from "./lib/store";
   import type { UserEntity } from "./domain/entities/user";
   import Footer from "./atoms/Footer.svelte";
+  import { ROLES } from "./domain/values/users";
+  import { pages } from "./domain/values/pages";
 
   let error: string | null = null;
-
-  const ROLES = {
-    ADMIN: "ADMIN",
-    USER: "USER",
-  };
-  const pages = {
-    HOME: "home",
-    CHATBOT: "chatbot",
-    SETTINGS: "settings",
-    DOCUMENTS: "documents",
-    VIDEO: "video",
-    PDF: "pdf",
-  };
 
   const pageStorage = new LocalStorage<string>("page", [pages.HOME]);
   const userStorage = new LocalStorage<UserEntity>("users", []);
@@ -60,55 +49,51 @@
   };
 </script>
 
-<main class="h-screen bg-gradient-to-br from-blue-800 to-white flex flex-col">
+<main
+  class="min-h-[100vh] w-full bg-gradient-to-br from-blue-800 to-white flex flex-col"
+>
   {#if page != pages.HOME}
-    <nav class="bg-blue-900 p-4 w-full flex">
-      <div
-        class="container w-full mx-auto flex flex-col md:flex-row items-center justify-between"
+    <nav class="bg-blue-900 p-4 w-full grid grid-cols-3 md:grid-cols-7 gap-4">
+      <button
+        type="button"
+        class="text-3xl font-bold text-white bg-transparent border-none cursor-pointer p-0 m-0 focus:outline-none"
+        on:click={() => setPage(pages.HOME)}
+        aria-label="Retour à l'accueil"
       >
+        {import.meta.env.VITE_TITLE || "Démo"}
+      </button>
+      <button
+        class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
+        on:click={() => setPage(pages.HOME)}>Accueil</button
+      >
+      <button
+        class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
+        on:click={() => setPage(pages.CHATBOT)}>Chatbot</button
+      >
+      {#if $userStore?.role == ROLES.ADMIN}
         <button
-          type="button"
-          class="text-3xl font-bold text-white bg-transparent border-none cursor-pointer p-0 m-0 focus:outline-none"
-          on:click={() => setPage(pages.HOME)}
-          aria-label="Retour à l'accueil"
+          class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
+          on:click={() => setPage(pages.SETTINGS)}>Paramètres</button
         >
-          {import.meta.env.VITE_TITLE || "Démo"}
-        </button>
-        <div class="flex md:flex-row text-white w-full gap-2 justify-center">
+      {/if}
+
+      {#if !error}
+        {#if $userStore?.role == ROLES.ADMIN}
           <button
             class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
-            on:click={() => setPage(pages.HOME)}>Accueil</button
+            on:click={() => setPage(pages.DOCUMENTS)}>Documents</button
           >
-          <button
-            class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
-            on:click={() => setPage(pages.CHATBOT)}>Chatbot</button
-          >
-          {#if $userStore?.role == ROLES.ADMIN}
-            <button
-              class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
-              on:click={() => setPage(pages.SETTINGS)}>Paramètres</button
-            >
-          {/if}
+        {/if}
 
-          {#if !error}
-            {#if $userStore?.role == ROLES.ADMIN}
-              <button
-                class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
-                on:click={() => setPage(pages.DOCUMENTS)}>Documents</button
-              >
-            {/if}
-
-            <button
-              class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
-              on:click={() => setPage(pages.PDF)}>Guide Utilisateur</button
-            >
-            <button
-              class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
-              on:click={() => setPage(pages.VIDEO)}>Guide Vidéo</button
-            >
-          {/if}
-        </div>
-      </div>
+        <button
+          class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
+          on:click={() => setPage(pages.PDF)}>Guide Utilisateur</button
+        >
+        <button
+          class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
+          on:click={() => setPage(pages.VIDEO)}>Guide Vidéo</button
+        >
+      {/if}
     </nav>
   {/if}
 
@@ -138,6 +123,3 @@
   {/if}
   <Footer />
 </main>
-{#if page == pages.HOME}
-  <Footer />
-{/if}

@@ -1,6 +1,8 @@
 import axios from "axios"; // You'll need to install axios or use another HTTP client
 
-const app = import.meta.env.TITLE || "demo"
+const app = import.meta.env.VITE_TITLE || "demo"
+const url = import.meta.env.VITE_URL || ""
+
 
 export class Embedding {
   constructor() {
@@ -9,7 +11,7 @@ export class Embedding {
 
   async initialize() {
     try {
-      const response = await axios.post("/initialize");
+      const response = await axios.post(url + "/initialize");
       if (response.status !== 200) {
         throw new Error("Failed to initialize collection");
       }
@@ -21,7 +23,7 @@ export class Embedding {
 
   async add(text: string, metadata?: object) {
     try {
-      const response = await axios.post("/documents", {
+      const response = await axios.post(url + "/documents", {
         documents: [text],
         ids: [`id-${Math.trunc(Math.random() * 1000)}`],
         metadatas: [{ ...metadata, app }]
@@ -37,7 +39,7 @@ export class Embedding {
 
   async search(text: string, metadatas?: object): Promise<{ documents: string[], metadatas: string[] }> {
     try {
-      const response = await axios.post("/query", {
+      const response = await axios.post(url + "/query", {
         queryTexts: [text],
         nResults: 10,
         metadatas: { ...metadatas, app }
@@ -56,7 +58,7 @@ export class Embedding {
 
   async remove(id: string) {
     try {
-      const response = await axios.delete("/documents", {
+      const response = await axios.delete(url + "/documents", {
         data: { ids: [id] },
       });
       if (response.status !== 200) {

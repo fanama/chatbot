@@ -6,6 +6,7 @@
   import VoiceOutput from "./VoiceOutput.svelte";
   import { onMount } from "svelte";
   import { userStore } from "../lib/store";
+  import { ROLES } from "../domain/values/users";
 
   export let message: MessageEntity;
 
@@ -130,7 +131,7 @@
             on:click={() => (contextDisplayer = !contextDisplayer)}
             >context</button
           >
-          {#if $userStore?.role == "ADMIN"}
+          {#if $userStore?.role == ROLES.ADMIN}
             <button
               class="px-2 py-1 bg-blue-600 text-white rounded flex items-center text-xs"
               on:click={message.insertToStore}>enregistrer</button
