@@ -18,12 +18,17 @@
     let chunks: Chunk[] = [];
     let currentChunk: Chunk | null = null;
 
-    let hasTitle = false;
-
     for (const line of lines) {
-      if (line.startsWith("#")) {
-        hasTitle = true;
-        if (currentChunk !== null) {
+      const isTitle = line.startsWith("#");
+      const currentTitleLevel = isTitle ? line.split(" ").shift()!.length : 0;
+      const lastTitleLevel = currentChunk?.title?.startsWith("#")
+        ? currentChunk.title.split(" ").shift()!.length
+        : 0;
+
+      if (isTitle && currentChunk && currentTitleLevel === lastTitleLevel) {
+        currentChunk.title += line;
+      } else if (isTitle) {
+        if (currentChunk) {
           chunks.push(currentChunk);
         }
         currentChunk = {
@@ -32,10 +37,10 @@
           content: [],
         };
       } else {
-        if (currentChunk !== null) {
+        if (currentChunk) {
           currentChunk.content.push(line);
         } else {
-          // If no title yet, start a chunk with null title (temporary)
+          // Si pas de titre encore, commence un chunk avec un titre null (temporaire)
           currentChunk = {
             fileName,
             title: fileName,
@@ -45,12 +50,25 @@
       }
     }
 
-    if (currentChunk !== null) {
+    if (currentChunk) {
       chunks.push(currentChunk);
     }
 
-    // If no title exists in the whole file, merge into a single chunk
-    if (!hasTitle && chunks.length > 1) {
+    chunks = chunks.reduce<Chunk[]>((acc, chunk) => {
+      if (chunk.content.length === 1 && acc.length > 0) {
+        acc[acc.length - 1].content.push(chunk.content[0]);
+        acc[acc.length - 1].content = [...new Set(acc[acc.length - 1].content)];
+      } else if (chunk.content.length > 1) {
+        acc.push(chunk);
+      }
+      return acc;
+    }, []);
+
+    // Si pas de titre dans le fichier entier, fusionne en un seul chunk
+    if (
+      !chunks.some((chunk) => chunk.title !== fileName) &&
+      chunks.length > 1
+    ) {
       return [
         {
           fileName,
@@ -169,7 +187,7 @@
       class="mt-4 h-screen overflow-y-scroll bg-gray-100 flex flex-col gap-2"
     >
       {#each chunks as chunk}
-        <pre class="text-blue-600 p-2 rounded-lg max-w-96">{chunk}</pre>
+        <pre class="text-blue-600 p-2 rounded-lg m-2 border w-fit">{chunk}</pre>
       {/each}
     </div>
   {:else if chunks.length > 0}

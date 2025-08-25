@@ -149,7 +149,7 @@
       class="context-container px-2 py-1 overflow-auto rounded flex flex-col items-start text-xs bg-white text-blue-600 w-full md:w-1/3"
     >
       {#each message.context as context}
-        <pre class="p-1 w-full whitespace-pre-wrap">{context}</pre>
+        <pre class="p-1 w-full whitespace-pre-wrap border">{context}</pre>
       {/each}
     </div>
   {/if}

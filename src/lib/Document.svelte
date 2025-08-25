@@ -79,7 +79,7 @@ ${titles.join("\n")}
 </script>
 
 <div
-  class="h-screen w-screen grid grid-cols-2 gap-4 p-4 bg-gradient-to-br from-blue-800 to-white"
+  class="h-full w-full grid grid-cols-2 gap-4 p-4 bg-gradient-to-br from-blue-800 to-white"
 >
   <!-- Left Section: Uploader -->
   <Uploader bind:fileName bind:chunks bind:titles />

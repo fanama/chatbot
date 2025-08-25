@@ -31,3 +31,5 @@ chroma
 chroma_store
 
 __pycache__
+
+nginx-config.conf
