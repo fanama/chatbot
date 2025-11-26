@@ -14,7 +14,7 @@ export class OllamaAI {
     let result = "";
 
     try {
-      const model = "qwen3:4b"
+      const model = "qwen2.5:1.5b"
       const url = `${this.ollamaEndpoint}/api/generate`
       // Build the prompt based on history (critical for Ollama's behavior)
       const prompt =

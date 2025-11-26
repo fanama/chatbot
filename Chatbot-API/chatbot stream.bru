@@ -1,0 +1,22 @@
+meta {
+  name: chatbot stream
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/chat-sse
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "query":["parles moi de Meciee ?"]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

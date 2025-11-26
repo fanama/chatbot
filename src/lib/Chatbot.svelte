@@ -21,7 +21,7 @@
   const historyStorage = new LocalStorage<MessageEntity>("history", []);
 
   let store: Embedding | null = null;
-  let useStore = true; // Nouvelle variable pour la checkbox
+  let useStore = false; // Nouvelle variable pour la checkbox
 
   let history: MessageEntity[] = historyStorage.getAll();
   let input: string = "";
@@ -104,6 +104,7 @@
     // Make API call to Google Generative AI
     const response = await ai.chat({
       text,
+      useVectorestore: useStore,
       history: [
         { sender: "system", text: $promptSystemStore },
         ...documents.map((text) => {
@@ -126,7 +127,7 @@
     history = [
       ...history,
       {
-        sender: "model",
+        sender: "system",
         text: response.text,
         provider: response.provider,
         context: [...metadatas, ...documents],
@@ -205,27 +206,34 @@
     </div>
 
     <!-- Input Controls -->
-    <div class="flex flex-col w-full p-2">
-      <!-- File Upload Modal -->
-      <Modal
-        title={fileName || "load file"}
-        className="bg-blue-500 text-white max-w-32 overflow-hidden text-ellipsis whitespace-nowrap text-xs"
-      >
-        <Uploader bind:fileName bind:chunks hide={true} />
+    <div class="w-full p-2 flex flex-col gap-3">
+      <!-- File Upload + Options -->
+      <div class="flex items-center gap-4">
+        <Modal
+          title={fileName || "load file"}
+          className="bg-blue-500 text-white max-w-32 overflow-hidden text-ellipsis whitespace-nowrap text-xs"
+        >
+          <Uploader bind:fileName bind:chunks hide={true} />
+        </Modal>
+
         {#if store}
-          <div class="flex items-center mb-2">
-            <input type="checkbox" bind:checked={useStore} class="mr-2" />
-            <div class="text-white text-xs">Recherche documentaire</div>
-          </div>
+          <label class="flex items-center gap-2 text-xs text-white">
+            <input type="checkbox" bind:checked={useStore} />
+            <span>Recherche documentaire</span>
+          </label>
         {/if}
-      </Modal>
+      </div>
 
       <!-- Message Input -->
-      <div class="flex flex-row w-full items-stretch">
+      <div class="flex items-stretch w-full">
         <textarea
           bind:value={input}
           placeholder="Type your message..."
-          class="p-2 flex-grow rounded-l-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gradient-to-br from-gray-200 to-white text-blue-600 font-mono text-sm"
+          class="
+        flex-grow p-2 rounded-l-lg bg-gradient-to-br from-gray-200 to-white
+        text-blue-600 font-mono text-sm shadow-sm
+        focus:outline-none focus:ring-2 focus:ring-blue-500
+      "
           on:keydown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
@@ -240,22 +248,26 @@
         <!-- Send Button -->
         <button
           on:click={sendMessage}
-          class="flex items-center justify-center bg-blue-600 text-gray-100 p-2 shadow-md rounded-r-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-600 font-mono text-xs"
           title="Send message"
+          class="
+        p-2 rounded-r-lg bg-blue-600 text-gray-100
+        shadow-md border border-blue-600 font-mono text-xs
+        hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500
+        flex items-center justify-center
+      "
         >
           <svg
             class="w-4 h-4 mr-1"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
           >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
               d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-            ></path>
+            />
           </svg>
         </button>
       </div>

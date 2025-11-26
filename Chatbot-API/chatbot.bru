@@ -1,0 +1,22 @@
+meta {
+  name: chatbot
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/chat
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "query":"who are you ?"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

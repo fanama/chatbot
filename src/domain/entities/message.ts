@@ -12,6 +12,7 @@ export interface Input {
   history?: MessageEntity[];
   model?: string;
   providerName?: string;
+  useVectorestore?: boolean;
   stream?: (chunk: string) => void
 }
 

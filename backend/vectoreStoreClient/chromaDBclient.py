@@ -1,9 +1,10 @@
-from chromadb import PersistentClient,HttpClient, Collection
+from chromadb import PersistentClient, HttpClient, Collection
 from chromadb.utils import embedding_functions
 from typing import List, Dict, Optional, Union
 
 # Configure embedding function
 embed_fn = embedding_functions.DefaultEmbeddingFunction()
+
 
 class ChromaDBClient:
     def __init__(self, collection_name: str = "test"):
@@ -44,12 +45,12 @@ class ChromaDBClient:
         # print("📥 Document added. Current store:", results)
 
     def query_collection(
-    self,
-    query_texts: List[str],
-    n_results: int = 10,
-    include: Optional[List[str]] = None,
-    metadatas: Optional[Dict] = None
-) -> Dict:
+        self,
+        query_texts: List[str],
+        n_results: int = 10,
+        include: Optional[List[str]] = None,
+        metadatas: Optional[Dict] = None
+    ) -> Dict:
         """Query the collection for similar documents."""
 
         print("🔍 Query input:", query_texts)
@@ -57,10 +58,11 @@ class ChromaDBClient:
         if self.collection is None:
             self.initialize()
         if include is None:
-            include = ["documents","metadatas"]
+            include = ["documents", "metadatas"]
 
         # Debug: see all stored docs before querying
-        docs_snapshot = self.collection.get(include=["documents", "embeddings"])
+        docs_snapshot = self.collection.get(
+            include=["documents", "embeddings"])
         embeddings = docs_snapshot.get("embeddings")
         # print("📂 All documents :", docs_snapshot.get('documents'))
         if embeddings is not None:
@@ -68,11 +70,10 @@ class ChromaDBClient:
         else:
             print("⚠ No embeddings found in collection")
 
-
         result = self.collection.query(
             query_texts=query_texts,
             n_results=n_results,
-            include=["documents","metadatas"],
+            include=["documents", "metadatas"],
             where=metadatas
         )
 
@@ -94,8 +95,10 @@ class ChromaDBClient:
         if include is None:
             include = ["documents", "metadatas", "ids"]
 
-        print("📄 Getting documents", {"ids": ids, "include": include, "filter": metadatas})
-        results = self.collection.get(ids=ids, include=include, where=metadatas)
+        print("📄 Getting documents", {"ids": ids,
+              "include": include, "filter": metadatas})
+        results = self.collection.get(
+            ids=ids, include=include, where=metadatas)
         return results.get("documents") or []
 
     def get_document_id(
@@ -107,7 +110,8 @@ class ChromaDBClient:
         """Return the IDs of matching documents."""
         if self.collection is None:
             self.initialize()
-        results = self.collection.get(ids=ids, include=include, where=metadatas)
+        results = self.collection.get(
+            ids=ids, include=include, where=metadatas)
         return results.get("ids", [])
 
     def update_document(self, ids: List[str], documents: List[str]) -> None:
@@ -126,6 +130,7 @@ class ChromaDBClient:
         """Delete all documents (or those matching metadata)."""
         if self.collection is None:
             self.initialize()
-        all_ids = self.get_document_id(include=["metadatas"], metadatas=metadatas)
+        all_ids = self.get_document_id(
+            include=["metadatas"], metadatas=metadatas)
         if all_ids:
             self.delete_document(all_ids)

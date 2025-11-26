@@ -53,7 +53,7 @@
   class="min-h-[100vh] w-full bg-gradient-to-br from-blue-800 to-white flex flex-col"
 >
   {#if page != pages.HOME}
-    <nav class="bg-blue-900 p-4 w-full grid grid-cols-3 md:grid-cols-9 gap-4">
+    <nav class="bg-blue-900 p-4 w-full grid grid-cols-3 md:grid-cols-8 gap-4">
       <button
         type="button"
         class="text-3xl col-span-3 font-bold text-white bg-transparent border-none cursor-pointer p-0 m-0 focus:outline-none"

@@ -1,4 +1,5 @@
 import type { Input, Response } from "../../domain/entities/message";
+import { BackendAI } from "./backend";
 import { GoogleAI } from "./google";
 import { MistralAI } from "./mistral";
 import { OllamaAI } from "./ollama";
@@ -14,10 +15,12 @@ export class AIProvider {
 
   constructor() {
     this.providers = [
+      new BackendAI(),
       new MistralAI(),
       new GoogleAI(),
       new OpenRouterAI(),
       new OllamaAI(),
+
     ];
   }
 
