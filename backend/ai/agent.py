@@ -29,7 +29,7 @@ if MISTRAL_API_KEY:
 # Single source of truth for the model identifiers: the badge sent to the client
 # must not drift from what the constructor actually loads.
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "granite4:7b-a1b-h")
-MISTRAL_MODEL = "mistral-large-latest"
+MISTRAL_MODEL = "mistral-small-latest"
 
 llm_ollama = ChatOllama(
     model=OLLAMA_MODEL,
@@ -39,8 +39,12 @@ llm_ollama = ChatOllama(
 )
 
 TOOLS = [
-    get_weather, web_search, get_time,
-    addition, division, calculator,
+    get_weather,
+    web_search,
+    get_time,
+    addition,
+    division,
+    calculator,
     query_collection_tool,
 ]
 
@@ -128,7 +132,11 @@ def _extract_text(message) -> Iterator[str]:
     blocks = getattr(message, "content_blocks", None)
     if isinstance(blocks, list):
         for block in blocks:
-            if isinstance(block, dict) and block.get("type") == "text" and block.get("text"):
+            if (
+                isinstance(block, dict)
+                and block.get("type") == "text"
+                and block.get("text")
+            ):
                 yield block["text"]
         return
 
@@ -152,7 +160,9 @@ def _chain(first: Optional[str], iterator: Iterator[str]) -> Iterator[str]:
     yield from iterator
 
 
-def _prepend(event: Tuple[str, str], iterator: Iterator[str]) -> Iterator[Tuple[str, str]]:
+def _prepend(
+    event: Tuple[str, str], iterator: Iterator[str]
+) -> Iterator[Tuple[str, str]]:
     """Emit one metadata event before the text tokens it describes."""
     yield event
     for token in iterator:
@@ -210,7 +220,7 @@ class AIProviderManager:
         try:
             logger.debug("Calling local Ollama agent")
             response = agent_executor.invoke({"messages": messages})
-            return response['messages'][-1].content
+            return response["messages"][-1].content
         except Exception as exc:
             if not self._cloud_fallbacks() or not _should_fallback(exc):
                 logger.error("Local agent failed without fallback", exc_info=True)
