@@ -4,9 +4,6 @@
   import PromptManager from "./lib/PromptManager.svelte";
   import { Embedding } from "./infra/storage/embedding";
   import { onMount } from "svelte";
-  import PdfViewer from "svelte-pdf";
-  import Guide from "./assets/guide_utilisateur.pdf";
-  import Video from "./assets/GuideVideo.mp4";
   import Login from "./lib/Login.svelte";
   import Accueil from "./lib/Accueil.svelte";
 
@@ -14,6 +11,7 @@
   import { userStore } from "./lib/store";
   import type { UserEntity } from "./domain/entities/user";
   import Footer from "./atoms/Footer.svelte";
+  import ThemeToggle from "./atoms/ThemeToggle.svelte";
   import { ROLES } from "./domain/values/users";
   import { pages } from "./domain/values/pages";
 
@@ -47,79 +45,130 @@
   const login = () => {
     setPage(pages.CHATBOT);
   };
+
+  type NavItem = { id: string; label: string; admin?: boolean };
+
+  // `!error` gated the guide pages before; kept, but as data instead of markup
+  // repeated once per button.
+  $: navItems = [
+    { id: pages.HOME, label: "Accueil" },
+    { id: pages.CHATBOT, label: "Chat" },
+    { id: pages.SETTINGS, label: "Paramètres", admin: true },
+    { id: pages.DOCUMENTS, label: "Documents", admin: true },
+    ...(!error
+      ? [
+          { id: pages.PDF, label: "Guide" },
+          { id: pages.VIDEO, label: "Vidéo" },
+        ]
+      : []),
+  ] as NavItem[];
+
+  $: visibleNav = navItems.filter(
+    (item) => !item.admin || $userStore?.role === ROLES.ADMIN,
+  );
 </script>
 
-<main
-  class="min-h-[100vh] w-full bg-gradient-to-br from-blue-800 to-white flex flex-col"
->
+<!-- `h-dvh` + `min-h-0` on the middle child: without a bounded height the chat
+     scroller had nothing to constrain it and the composer drifted off-screen. -->
+<main class="flex h-dvh w-full flex-col overflow-hidden bg-surface text-foreground">
   {#if page != pages.HOME}
-    <nav class="bg-blue-900 p-4 w-full grid grid-cols-3 md:grid-cols-8 gap-4">
+    <header
+      class="flex shrink-0 flex-wrap items-center gap-x-1 gap-y-2 border-b border-border bg-surface-raised px-4 py-3 md:px-6"
+    >
+      <!-- Link to home, not an action: kept off the `.btn` scale but padded to
+           the same 32px rhythm as the nav items so the focus ring is actually
+           visible around the text. `-my-1` keeps the header height unchanged. -->
       <button
         type="button"
-        class="text-3xl col-span-3 font-bold text-white bg-transparent border-none cursor-pointer p-0 m-0 focus:outline-none"
         on:click={() => setPage(pages.HOME)}
+        class="-my-1 mr-1.5 truncate rounded-lg px-1.5 py-1 text-base font-semibold tracking-tight text-foreground transition-colors hover:bg-surface-sunken hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         aria-label="Retour à l'accueil"
+        title={import.meta.env.VITE_TITLE || "Démo"}
       >
         {import.meta.env.VITE_TITLE || "Démo"}
       </button>
-      <button
-        class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
-        on:click={() => setPage(pages.HOME)}>Accueil</button
-      >
-      <button
-        class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
-        on:click={() => setPage(pages.CHATBOT)}>Chatbot</button
-      >
-      {#if $userStore?.role == ROLES.ADMIN}
-        <button
-          class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
-          on:click={() => setPage(pages.SETTINGS)}>Paramètres</button
-        >
-      {/if}
 
-      {#if !error}
-        {#if $userStore?.role == ROLES.ADMIN}
+      <nav class="flex min-w-0 flex-1 flex-wrap items-center gap-1" aria-label="Navigation principale">
+        {#each visibleNav as item (item.id)}
           <button
-            class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
-            on:click={() => setPage(pages.DOCUMENTS)}>Documents</button
+            type="button"
+            on:click={() => setPage(item.id)}
+            aria-current={page === item.id ? "page" : undefined}
+            class={`btn btn-sm ${
+              page === item.id
+                ? "bg-primary-soft text-primary hover:bg-primary-soft"
+                : "btn-ghost"
+            }`}
           >
-        {/if}
+            {item.label}
+          </button>
+        {/each}
+      </nav>
 
-        <button
-          class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
-          on:click={() => setPage(pages.PDF)}>Guide Utilisateur</button
-        >
-        <button
-          class={`w-full md:w-auto p-3 rounded-md cursor-pointer text-blue-600 bg-white m-1 transition duration-300 ease-in-out hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
-          on:click={() => setPage(pages.VIDEO)}>Guide Vidéo</button
-        >
-      {/if}
-    </nav>
+      <ThemeToggle />
+    </header>
   {/if}
 
-  {#if page == pages.HOME}
-    <div class="flex flex-col w-full h-full">
-      <Accueil chat={login} />
+  <!-- `flex flex-col` is load-bearing: it makes this a flex container so the
+       active page's `flex-1` (Chatbot) gets a bounded height. As a plain block
+       the child's `flex-1` was ignored, Chatbot grew to its content, its
+       `overflow-y-auto` message list never scrolled, and `overflow-hidden` here
+       made the overflowing messages unreachable. -->
+  <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+    {#if page == pages.HOME}
+      <div class="page">
+        <Accueil chat={login} />
 
-      <Login {login} />
-    </div>
-  {:else if page == pages.SETTINGS}
-    <PromptManager />
-  {:else if page == pages.DOCUMENTS}
-    <Document />
-  {:else if page == pages.PDF}
-    <div class="max-h-3/4 overflow-scroll w-full">
-      <PdfViewer showBorder={false} scale={1.5} url={Guide} />
-    </div>
-  {:else if page == pages.VIDEO}
-    <div class="max-h-3/4 flex justify-center w-full">
-      <video class="w-full max-w-[700px]" controls>
-        <track kind="captions" />
-        <source src={Video} type="video/mp4" />
-      </video>
-    </div>
-  {:else if (page = pages.CHATBOT)}
-    <Chatbot />
-  {/if}
+        <Login {login} />
+      </div>
+    {:else if page == pages.SETTINGS}
+      <PromptManager />
+    {:else if page == pages.DOCUMENTS}
+      <Document />
+    {:else if page == pages.PDF}
+      <!-- svelte-pdf pulls the whole PDF.js runtime (~3.7 MB with the worker).
+           It used to be a static import, so every visitor paid for it on the home
+           page even without opening this tab. -->
+      {#await Promise.all([
+        import("svelte-pdf"),
+        import("./assets/guide_utilisateur.pdf"),
+      ])}
+        <p class="page-pad text-muted">Chargement du guide…</p>
+      {:then [module, guide]}
+        <div class="page-pad">
+          <h1 class="page-title">Guide utilisateur</h1>
+          <p class="page-sub">
+            Documentation de l'application, au format PDF.
+          </p>
+          <div class="mt-4 h-[calc(100%-5rem)] overflow-auto">
+            <module.default showBorder={false} scale={1.5} url={guide.default} />
+          </div>
+        </div>
+      {/await}
+    {:else if page == pages.VIDEO}
+      <!-- The 33 MB guide is only fetched when the page is opened. -->
+      {#await import("./assets/GuideVideo.mp4").then((m) => m.default)}
+        <p class="page-pad text-muted">Chargement de la vidéo…</p>
+      {:then videoUrl}
+        <div class="page page-pad">
+          <h1 class="page-title">Vidéo de présentation</h1>
+          <p class="page-sub">
+            Présentation vidéo de l'application.
+          </p>
+          <video
+            class="mt-4 w-full max-w-4xl rounded-lg border border-border bg-surface-raised"
+            controls
+            preload="metadata"
+          >
+            <source src={videoUrl} type="video/mp4" />
+            Votre navigateur ne prend pas en charge la lecture vidéo.
+          </video>
+        </div>
+      {/await}
+    {:else if page == pages.CHATBOT}
+      <Chatbot />
+    {/if}
+  </div>
+
   <Footer />
 </main>

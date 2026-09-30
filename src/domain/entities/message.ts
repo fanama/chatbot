@@ -12,8 +12,12 @@ export interface Input {
   history?: MessageEntity[];
   model?: string;
   providerName?: string;
-  useVectorestore?: boolean;
-  stream?: (chunk: string) => void
+  useVectorstore?: boolean;
+  /** Cancels an in-flight request (stop button, new message, unmount). */
+  signal?: AbortSignal;
+  stream?: (chunk: string) => void;
+  /** Fired as soon as the backend announces the answering model. */
+  onProvider?: (provider: string) => void;
 }
 
 export interface Response {

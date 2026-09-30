@@ -1,12 +1,23 @@
-from backend.vectoreStoreClient.chromaDBclient import ChromaDBClient
+import logging
+from typing import Any, Dict
+
+from backend.rag import extract_urls
+from backend.vectoreStoreClient.chromaDBclient import get_client
 from backend.youtube.youtubeToText import Youtube
 
-chroma_db_client = ChromaDBClient("my_collection")
+logger = logging.getLogger(__name__)
 
-transcript = Youtube()
+_transcript = None
 
 
-def query_collection_tool(input_data: dict):
+def transcript() -> Youtube:
+    global _transcript
+    if _transcript is None:
+        _transcript = Youtube()
+    return _transcript
+
+
+def query_collection_tool(input_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Query a ChromaDB collection and optionally attach transcripts or markdown
     for URLs found inside the query text.
@@ -20,38 +31,37 @@ def query_collection_tool(input_data: dict):
         "metadatas": {...}
     }
     """
+    if not isinstance(input_data, dict):
+        return {"error": "Input must be an object"}
+
+    query_texts = input_data.get("queryTexts")
+    if not query_texts or not isinstance(query_texts, list):
+        return {"error": "Field 'queryTexts' must be a non-empty list"}
 
     try:
-        query_texts = input_data.get("queryTexts")
-        n_results = input_data.get("nResults", 10)
-        include = input_data.get("include", [])
-        metadatas = input_data.get("metadatas")
-
-        # Query the DB
-        results = chroma_db_client.query_collection(
+        results = get_client().query_collection(
             query_texts=query_texts,
-            n_results=n_results,
-            include=include,
-            metadatas=metadatas
+            n_results=input_data.get("nResults", 10),
+            include=input_data.get("include") or None,
+            where=input_data.get("metadatas"),
         )
+    except Exception as exc:
+        logger.exception("Tool query_collection failed")
+        return {"error": f"Error querying collection: {exc}"}
 
-        # Post-processing: detect URLs in the first query text
-        first_query = query_texts[0] if query_texts else ""
-        for t in first_query.split(" "):
-            if "metadatas" not in results or not results["metadatas"]:
-                continue
+    if not results["metadatas"]:
+        results["metadatas"] = [[]]
 
-            # If youtube link → add transcript
-            if t.startswith("http") and "youtube.com" in t:
-                text = transcript.generateText(t)
+    for url in extract_urls(query_texts[0]):
+        try:
+            if "youtube.com" in url or "youtu.be" in url:
+                text = transcript().generateText(url)
                 results["metadatas"][0].append({"transcript": text})
-
-            # If non-youtube URL → add webpage markdown
-            elif t.startswith("http"):
-                text = transcript.generateMArkdown(t)
+            else:
+                text = transcript().generateMArkdown(url)
                 results["metadatas"][0].append({"web page": text})
+        except Exception:
+            logger.warning("Could not fetch content for %s", url, exc_info=True)
+            results["metadatas"][0].append({"error": f"Could not fetch {url}"})
 
-        return results
-
-    except Exception as e:
-        return {"error": f"Error querying collection: {e}"}
+    return results

@@ -1,63 +1,56 @@
 import type { Input, Response } from "../../domain/entities/message";
 import { BackendAI } from "./backend";
-import { GoogleAI } from "./google";
-import { MistralAI } from "./mistral";
-import { OllamaAI } from "./ollama";
-import { OpenRouterAI } from "./openRouter";
+import { isAbortError } from "./config";
 
 interface Provider {
   chat: (input: Input) => Promise<Response>;
   name: string;
 }
 
+export class ProviderError extends Error {
+  constructor(
+    message: string,
+    readonly cause?: unknown,
+  ) {
+    super(message);
+    this.name = "ProviderError";
+  }
+}
+
+/**
+ * Registry of the available providers.
+ *
+ * The failover that used to live here (loop over 5 browser-side providers,
+ * which meant retrying every request against Mistral, Google then OpenRouter
+ * and billing each attempt) is now performed server-side by `AIProviderManager`,
+ * where it is logged and guarded against pointless retries.
+ */
 export class AIProvider {
   private providers: Provider[];
 
   constructor() {
-    this.providers = [
-      new BackendAI(),
-      new MistralAI(),
-      new GoogleAI(),
-      new OpenRouterAI(),
-      new OllamaAI(),
-
-    ];
+    this.providers = [new BackendAI()];
   }
 
-  getAll() {
+  getAll(): string[] {
     return this.providers.map((p) => p.name);
   }
 
   async chat(input: Input): Promise<Response> {
-    try {
-      const provider = this.providers.find(
-        (p) => p.name === input.providerName,
-      );
-      if (provider) {
-        const response = await provider.chat(input);
-        if (response.text.trim() === "") {
-          throw new Error(
-            "Provider returned an empty response." + response.provider,
-          );
-        }
-        return response;
+    const name = input.providerName;
+
+    if (name) {
+      const provider = this.providers.find((p) => p.name === name);
+      if (!provider) {
+        throw new ProviderError(
+          `Unknown provider "${name}". Available: ${this.getAll().join(", ")}`,
+        );
       }
-    } catch (err) {
-      console.log(input.providerName + " does not exist");
+      return provider.chat(input);
     }
-    for (const provider of this.providers) {
-      try {
-        const response = await provider.chat(input);
-        if (response.text.trim() === "") {
-          throw new Error(
-            "Provider returned an empty response." + response.provider,
-          );
-        }
-        return response;
-      } catch (error) {
-        console.error(`Provider failed: ${error}`);
-      }
-    }
-    throw new Error("All providers failed.");
+
+    return this.providers[0].chat(input);
   }
 }
+
+export { isAbortError };

@@ -1,12 +1,22 @@
 <script lang="ts">
-  import { providersStore, providerStore } from "./store";
+  /**
+   * Provider selection happens server-side, in `AIProviderManager`: it tries
+   * Ollama first, then falls back to Mistral, Google and OpenRouter. This panel
+   * used to hold a `<select>` listing the only registered provider
+   * ("backend"), which looked like a model choice but could not change anything.
+   * The model that actually answered is reported by the `provider` SSE frame and
+   * shown as a badge under each assistant message.
+   */
 </script>
 
-<select
-  bind:value={$providerStore}
-  class="w-full h-full p-3 m-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-blue-900 font-mono"
+<div
+  class="card p-4 text-sm text-muted"
+  role="note"
 >
-  {#each $providersStore as provider}
-    <option value={provider}>provider : {provider}</option>
-  {/each}
-</select>
+  <p class="font-medium text-foreground">Fournisseur automatique</p>
+  <p class="mt-1">
+    Les appels sont tentés dans l'ordre&nbsp;: Ollama, puis Mistral, Google Gemini et
+    OpenRouter. Le modèle ayant réellement répondu est affiché sous chaque message de
+    l'assistant.
+  </p>
+</div>

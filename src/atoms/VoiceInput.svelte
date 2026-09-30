@@ -1,14 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import Mic from "../assets/mic.svg";
-  import MicOff from "../assets/mic-off.svg";
   import { language } from "../lib/store";
 
   export let transcript = "";
-  const dispatch = (eventName: string, detail: any) => {
-    const event = new CustomEvent(eventName, { detail });
-    window.dispatchEvent(event);
-  };
   let canRecord = true;
   let recognition: any;
   let isListening = false;
@@ -37,8 +31,9 @@
             newTranscript += event.results[i][0].transcript;
           }
         }
-        transcript += newTranscript;
-        dispatch("transcriptChanged", { transcript });
+        if (newTranscript) {
+          transcript += newTranscript;
+        }
       };
 
       recognition.onend = () => {
@@ -88,21 +83,36 @@
 </script>
 
 {#if canRecord}
-  {#if isListening}
-    <button
-      id="stopButton"
-      class="px-4 py-2 text-white bg-red-500"
-      on:click={stopRecording}
-    >
-      <img src={MicOff} alt="record" class="w-[1rem]" />
-    </button>
-  {:else}
-    <button
-      id="startButton"
-      class="px-4 py-2 text-white bg-blue-500"
-      on:click={startRecording}
-    >
-      <img src={Mic} alt="record" class="w-[1rem]" />
-    </button>
-  {/if}
+  <button
+    id={isListening ? "stopButton" : "startButton"}
+    class={`btn btn-icon-lg btn-outline ${
+      isListening ? "border-primary text-primary" : "text-muted"
+    }`}
+    on:click={isListening ? stopRecording : startRecording}
+    aria-label={isListening ? "Arrêter l'enregistrement" : "Dicter le message"}
+    title={isListening ? "Arrêter" : "Dicter"}
+  >
+    {#if isListening}
+      <span
+        class="h-2 w-2 rounded-full bg-danger"
+        aria-hidden="true"
+        title="Enregistrement en cours"
+      ></span>
+    {:else}
+      <svg
+        class="h-4 w-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.9"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M12 3v3M5.6 6.6l2.1 2.1M4 13h3M9.7 18.3l-2.1 2.1M18 13h3" />
+        <rect x="9" y="8" width="6" height="12" rx="3" />
+        <circle cx="19" cy="5" r="1.6" />
+        <path d="M4 5h2.5" />
+      </svg>
+    {/if}
+  </button>
 {/if}

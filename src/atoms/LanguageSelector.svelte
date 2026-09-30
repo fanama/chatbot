@@ -2,14 +2,18 @@
   import { language } from "../lib/store";
 </script>
 
-<select
-  id="languageSelect"
-  bind:value={$language}
-  class="w-full p-2 border border-gray-300 rounded-md"
->
-  <option class="text-blue-900" value="en-US">English (US)</option>
-  <option class="text-blue-900" value="es-ES">Spanish (Spain)</option>
-  <option class="text-blue-900" value="fr-FR">French (France)</option>
-  <option class="text-blue-900" value="de-DE">German (Germany)</option>
-  <!-- Add more languages as needed -->
-</select>
+<div>
+  <label for="languageSelect" class="section-label mb-1.5 block"
+    >Langue de réponse</label
+  >
+  <select
+    id="languageSelect"
+    bind:value={$language}
+    class="field select-field"
+  >
+    <option value="en-US">English (US)</option>
+    <option value="es-ES">Español (España)</option>
+    <option value="fr-FR">Français (France)</option>
+    <option value="de-DE">Deutsch (Deutschland)</option>
+  </select>
+</div>

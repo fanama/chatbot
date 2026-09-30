@@ -12,3 +12,8 @@ export const userStore = writable<UserEntity>();
 export const providersStore = writable<string[]>([]);
 export const providerStore = writable<string>("");
 export const language = writable<string>("fr-FR");
+
+export type Theme = "light" | "dark";
+
+export const themeStorage = new LocalStorage<Theme>("theme", ["light"]);
+export const themeStore = writable<Theme>(themeStorage.getAll()[0] ?? "light");

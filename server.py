@@ -1,18 +1,63 @@
-from flask import Flask, request, jsonify, send_from_directory,  stream_with_context, Response
+import json
+import logging
+import os
+
+from flask import Flask, jsonify, request, send_from_directory, Response, stream_with_context
 from flask_cors import CORS
-from backend.vectoreStoreClient.chromaDBclient import ChromaDBClient
+
+from backend.rag import build_context_messages, extract_urls
+from backend.vectoreStoreClient.chromaDBclient import get_client
 from backend.youtube.youtubeToText import Youtube
 from backend.ai.agent import AIProviderManager
 
-import json
-
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s %(levelname)-8s %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app)
 
-chroma_db_client = ChromaDBClient("my_collection")
-transcript = Youtube()
-agent = AIProviderManager()
+# Lazy singletons: importing this module no longer opens the Chroma store, so a
+# syntax check, a CLI run or a failed startup does not pay for it.
+_transcript = None
+_agent = None
+
+
+def transcript():
+    global _transcript
+    if _transcript is None:
+        _transcript = Youtube()
+    return _transcript
+
+
+def agent():
+    global _agent
+    if _agent is None:
+        _agent = AIProviderManager()
+    return _agent
+
+
+def read_json():
+    """Return the request body, or a 400 response when it is absent/invalid."""
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return None, (jsonify({"error": "Expected a JSON object body"}), 400)
+    return data, None
+
+
+def parse_where(raw):
+    """Parse the `metadatas` query-string filter into a Chroma `where` dict."""
+    if not raw:
+        return None
+    try:
+        value = json.loads(raw)
+    except (TypeError, ValueError):
+        raise ValueError("'metadatas' must be a JSON object")
+    if not isinstance(value, dict):
+        raise ValueError("'metadatas' must be a JSON object")
+    return value
 
 
 @app.route('/')
@@ -33,232 +78,247 @@ def guide_utilisateur():
 # --- SSE Streaming Endpoint ---
 @app.route('/chat-sse', methods=['POST'])
 def chat_sse():
-    req = request.get_json()
+    data, error = read_json()
+    if error:
+        return error
 
-    query = req.get("query")
-    history = req.get("history", [])
-    n_results = req.get("nResults", 5)
-    include = req.get("include", [])
-    metadatas = req.get("metadatas")
-    use_vectorstore = req.get("useVectorstore", False)  # NEW FLAG
+    query = data.get("query")
+    if not query or not isinstance(query, str):
+        return jsonify({"error": "Field 'query' is required"}), 400
 
-    if not query:
-        return jsonify({"message": "QUERY is empty"}), 429
+    messages, _documents, _metadatas = build_context_messages(
+        query=query,
+        history=data.get("history") or [],
+        use_vectorstore=data.get("useVectorstore", True),
+        n_results=data.get("nResults", 5),
+        include=data.get("include") or None,
+        where=data.get("metadatas"),
+    )
 
-    documents = []
-    metadatas_db = []
+    def sse(payload: dict) -> str:
+        return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
 
-    # --- OPTIONAL VECTORSTORE LOOKUP ---
-    if use_vectorstore:
-        vs = chroma_db_client.query_collection(
-            [query],
-            n_results,
-            include,
-            metadatas
-        )
-        documents = vs.get("documents", [])
-        metadatas_db = vs.get("metadatas", [])
-
-    # Build LLM message list
-    messages = list(history)  # avoid mutating original list
-
-    # Inject retrieved context (no duplicates)
-    if documents:
-        for docs, metas in zip(documents, metadatas_db):
-            for doc, meta in zip(docs, metas):
-                messages.append({
-                    "role": "system",
-                    "content": doc
-                })
-
-    # Add final user query
-    messages.append({"role": "user", "content": query})
-
-    # --- SSE GENERATOR ---
     def generate_stream():
+        stream = agent().call_stream(messages)
         try:
-            for token in agent.call_stream(messages):
-                # Format for SSE
-                yield f"data: {token}\n\n"
+            for kind, value in stream:
+                if kind == "provider":
+                    # Sent before any token so the client can label the answer.
+                    yield sse({"type": "provider", "provider": value})
+                else:
+                    yield sse({"type": "text", "text": value})
         except GeneratorExit:
-            # Client disconnected mid-stream
+            # Client disconnected mid-stream.
+            logger.info("Client disconnected during streaming")
             return
-        except Exception as e:
-            yield f"data: [ERROR] {str(e)}\n\n"
+        except Exception:
+            logger.exception("Streaming failed")
+            yield sse({"type": "error", "text": "Erreur interne pendant la génération."})
+        finally:
+            # Closes the upstream generator so the Ollama/Mistral HTTP
+            # connection is released instead of waiting for the GC.
+            close = getattr(stream, "close", None)
+            if close:
+                close()
 
-    # Return streaming response
-    return Response(
+        # Reached only on normal completion or on a handled error: a yield in a
+        # finally block would raise RuntimeError on client disconnect.
+        yield "data: [DONE]\n\n"
+
+    response = Response(
         stream_with_context(generate_stream()),
         mimetype="text/event-stream",
     )
+    # Without these, nginx buffers the stream and tokens arrive in bursts.
+    response.headers["Cache-Control"] = "no-cache, no-transform"
+    response.headers["X-Accel-Buffering"] = "no"
+    response.headers["Connection"] = "keep-alive"
+    return response
 
 
 @app.route('/chat', methods=['POST'])
 def chatbot():
-    data = request.get_json()
+    data, error = read_json()
+    if error:
+        return error
 
     query = data.get("query")
-    n_results = data.get("nResults", 5)
-    include = data.get("include", [])
-    metadatas = data.get("metadatas")
-    use_vectorstore = data.get("useVectorstore", True)  # <--- NEW FLAG
+    if not query or not isinstance(query, str):
+        return jsonify({"error": "Field 'query' is required"}), 400
 
-    if not query:
-        return jsonify({"message": "QUERY is empty"}), 429
-
-    documents = []
-    metadatas_database = []
-
-    # --- OPTIONAL: Only fetch vectorstore when needed ----
-    if use_vectorstore:
-        vs_data = chroma_db_client.query_collection(
-            [query],
-            n_results,
-            include,
-            metadatas
-        )
-        documents = vs_data.get("documents", [])
-        metadatas_database = vs_data.get("metadatas", [])
-
-    # Build message history for LLM
-    messages = []
-
-    # Insert retrieved context (if any)
-    if documents:
-        for docs, metas in zip(documents, metadatas_database):
-            for doc, meta in zip(docs, metas):
-                messages.append({
-                    "role": "system",
-                    "content": doc
-                })
-
-    # Add the user query at the end
-    messages.append({"role": "user", "content": query})
-
-    # Call the LLM agent
-    response = agent.call(messages)
+    messages, documents, metadatas = build_context_messages(
+        query=query,
+        use_vectorstore=data.get("useVectorstore", True),
+        n_results=data.get("nResults", 5),
+        include=data.get("include") or None,
+        where=data.get("metadatas"),
+    )
 
     return jsonify({
-        "message": response,
+        "message": agent().call(messages),
         "documents": documents,
-        "metadatas": metadatas_database
+        "metadatas": metadatas,
     }), 200
 
 
 @app.route('/initialize', methods=['POST'])
 def initialize():
     try:
-        chroma_db_client.initialize()
+        get_client().initialize()
         return jsonify({"message": "Collection initialized"}), 200
-    except Exception as e:
-        print(f"Error initializing collection: {e}")
+    except Exception:
+        logger.exception("Error initializing collection")
         return jsonify({"error": "Error initializing collection"}), 500
 
 
 @app.route('/documents', methods=['POST'])
 def add_documents():
+    data, error = read_json()
+    if error:
+        return error
+
     try:
-        data = request.get_json()
-        documents = data.get('documents', [])
-        ids = data.get('ids', [])
-        metadatas = data.get('metadatas', None)
-        chroma_db_client.add_document(documents, ids, metadatas)
+        get_client().add_document(
+            documents=data.get('documents') or [],
+            ids=data.get('ids') or [],
+            metadatas=data.get('metadatas'),
+        )
         return jsonify({"message": "Documents added"}), 200
-    except Exception as e:
-        print(f"Error adding documents: {e}")
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception:
+        logger.exception("Error adding documents")
         return jsonify({"error": "Error adding documents"}), 500
 
 
 @app.route('/query', methods=['POST'])
 def query_collection():
+    data, error = read_json()
+    if error:
+        return error
+
+    query_texts = data.get('queryTexts')
+    if not query_texts or not isinstance(query_texts, list):
+        return jsonify({"error": "Field 'queryTexts' must be a non-empty list"}), 400
+
     try:
-        data = request.get_json()
-        query_texts = data.get('queryTexts')
-        n_results = data.get('nResults', 10)
-        include = data.get('include', [])
-        metadatas = data.get('metadatas', None)
-
-        results = chroma_db_client.query_collection(
+        results = get_client().query_collection(
             query_texts=query_texts,
-            n_results=n_results,
-            include=include,
-            metadatas=metadatas
+            n_results=data.get('nResults', 10),
+            include=data.get('include') or None,
+            where=data.get('metadatas'),
         )
-
-        for t in query_texts[0].split(" "):
-            if "metadatas" not in results or not results["metadatas"]:
-                continue
-            if t.startswith("http") and "youtube.com" in t:
-                text = transcript.generateText(t)
-                results["metadatas"][0].append({"transcript": text})
-            elif t.startswith("http"):
-                text = transcript.generateMArkdown(t)
-                results["metadatas"][0].append({"web page": text})
-
-        return jsonify(results), 200
-    except Exception as e:
-        print(f"Error querying collection: {e}")
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception:
+        logger.exception("Error querying collection")
         return jsonify({"error": "Error querying collection"}), 500
+
+    # Attach transcripts / page content for the URLs mentioned in the query.
+    if not results["metadatas"]:
+        results["metadatas"] = [[]]
+    for url in extract_urls(query_texts[0]):
+        try:
+            if "youtube.com" in url or "youtu.be" in url:
+                text = transcript().generateText(url)
+                results["metadatas"][0].append({"transcript": text})
+            else:
+                text = transcript().generateMArkdown(url)
+                results["metadatas"][0].append({"web page": text})
+        except Exception:
+            logger.warning("Could not fetch content for %s", url, exc_info=True)
+            results["metadatas"][0].append({"error": f"Could not fetch {url}"})
+
+    return jsonify(results), 200
 
 
 @app.route('/documents', methods=['GET'])
 def get_documents():
-    try:
-        ids = request.args.get('ids', None)
-        include = request.args.get('include')
-        include_list = include.split(',') if include else [
-            "documents", "metadatas"]
+    ids = request.args.get('ids')
+    include_list = request.args.get('include')
+    include = (
+        [item.strip() for item in include_list.split(',') if item.strip()]
+        if include_list else None
+    )
 
-        metadatas = request.args.get('metadatas')
-        parsed_metadatas = json.loads(metadatas) if metadatas else None
-        results = chroma_db_client.get_document(
+    try:
+        where = parse_where(request.args.get('metadatas'))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    try:
+        results = get_client().get_document(
             ids=ids.split(',') if ids else None,
-            include=include_list,
-            metadatas=parsed_metadatas
+            include=include,
+            where=where,
         )
-        print("ids : ", ids.split(',') if ids else None, "RESULT : ", results)
-        return jsonify(results), 200
-    except Exception as e:
-        print(f"Error getting documents: {e}")
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception:
+        logger.exception("Error getting documents")
         return jsonify({"error": "Error getting documents"}), 500
+
+    logger.debug("GET /documents returned %d document(s)", len(results))
+    return jsonify({"documents": results}), 200
 
 
 @app.route('/documents', methods=['PUT'])
 def update_documents():
+    data, error = read_json()
+    if error:
+        return error
+
     try:
-        data = request.get_json()
-        ids = data.get('ids')
-        documents = data.get('documents')
-        chroma_db_client.update_document(ids, documents)
+        get_client().update_document(
+            ids=data.get('ids') or [],
+            documents=data.get('documents') or [],
+        )
         return jsonify({"message": "Documents updated"}), 200
-    except Exception as e:
-        print(f"Error updating documents: {e}")
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception:
+        logger.exception("Error updating documents")
         return jsonify({"error": "Error updating documents"}), 500
 
 
 @app.route('/documents', methods=['DELETE'])
 def delete_documents():
+    data, error = read_json()
+    if error:
+        return error
+
+    ids = data.get('ids')
+    if not ids:
+        return jsonify({"error": "Field 'ids' is required"}), 400
+
     try:
-        data = request.get_json()
-        ids = data.get('ids')
-        chroma_db_client.delete_document(ids)
+        get_client().delete_document(ids)
         return jsonify({"message": "Documents deleted"}), 200
-    except Exception as e:
-        print(f"Error deleting documents: {e}")
+    except Exception:
+        logger.exception("Error deleting documents")
         return jsonify({"error": "Error deleting documents"}), 500
 
 
 @app.route('/empty-documents', methods=['DELETE'])
 def delete_all_documents():
     try:
-        metadatas = request.args.get('metadatas')
-        parsed_metadatas = json.loads(metadatas) if metadatas else None
-        chroma_db_client.delete_all_documents(parsed_metadatas)
+        where = parse_where(request.args.get('metadatas'))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    try:
+        get_client().delete_all_documents(where)
         return jsonify({"message": "success"}), 200
-    except Exception as e:
-        print(f"Error deleting documents: {e}")
+    except Exception:
+        logger.exception("Error deleting documents")
         return jsonify({"error": "Error deleting documents"}), 500
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    # debug=True on 0.0.0.0 exposes the Werkzeug debugger and starts a second
+    # process that reopens the same chroma_store directory.
+    app.run(
+        host=os.getenv("HOST", "127.0.0.1"),
+        port=int(os.getenv("PORT", 3000)),
+        debug=os.getenv("FLASK_DEBUG", "").lower() in ("1", "true", "yes"),
+    )

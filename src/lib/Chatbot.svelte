@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { MessageEntity } from "../domain/entities/message";
   import Displayer from "../atoms/Diplayer.svelte";
-  import { onMount } from "svelte";
-  import { AIProvider } from "../infra/ai/aiProvider";
+  import { onMount, tick } from "svelte";
+  import { AIProvider, isAbortError } from "../infra/ai/aiProvider";
   import {
     promptStore,
     promptSystemStore,
@@ -27,7 +27,10 @@
   let input: string = "";
   let loading: boolean = false;
   let streamContent = "";
+  let streamProvider = "";
   let fileName: string = "";
+  let errorMessage = "";
+  let controller: AbortController | null = null;
 
   let chunks: string[] = [];
 
@@ -35,18 +38,81 @@
 
   const ai = new AIProvider();
 
-  function scrollBottom() {
-    if (messageContainer) {
-      messageContainer.scrollTo({
-        top: messageContainer.scrollHeight,
-        behavior: "smooth",
+  // Tokens arrive one by one, far faster than the screen refreshes. Writing
+  // `streamContent` on every token invalidated the whole component and re-diffed
+  // the whole message list, so they are batched to one update per frame.
+  let pendingTokens = "";
+  let frame: number | null = null;
+
+  const flushTokens = (): string => {
+    if (frame !== null) {
+      cancelAnimationFrame(frame);
+      frame = null;
+    }
+    if (!pendingTokens) return streamContent;
+
+    streamContent += pendingTokens;
+    pendingTokens = "";
+    return streamContent;
+  };
+
+  const pushToken = (token: string) => {
+    pendingTokens += token;
+    if (frame === null) {
+      frame = requestAnimationFrame(() => {
+        frame = null;
+        flushTokens();
       });
     }
+  };
+
+  // A scroll region only follows new content if it is told to: browsers only
+  // auto-anchor growth near the top of the content, so a streaming answer
+  // (which grows at the bottom) ran off the edge while the view stayed put.
+  const STICK_THRESHOLD_PX = 96;
+
+  // Held in an object on purpose. Assigning a top-level `let` would invalidate
+  // the component on every `scroll` event, so a single smooth scroll would
+  // trigger a full re-render per frame.
+  const scrollState = { stick: true };
+
+  const isNearBottom = () => {
+    if (!messageContainer) return true;
+    const { scrollTop, scrollHeight, clientHeight } = messageContainer;
+    return scrollHeight - (scrollTop + clientHeight) < STICK_THRESHOLD_PX;
+  };
+
+  const onScroll = () => {
+    // `scroll` also fires for our own programmatic scrolls, which is what keeps
+    // this flag correct: it lands near the bottom and re-arms the flag.
+    scrollState.stick = isNearBottom();
+  };
+
+  const scrollToBottom = (behavior: ScrollBehavior = "auto", force = false) => {
+    if (!messageContainer) return;
+    if (!force && !scrollState.stick) return;
+    messageContainer.scrollTo({ top: messageContainer.scrollHeight, behavior });
+  };
+
+  // A new exchange must always be visible, so this one forces the scroll.
+  $: if (history) {
+    scrollToBottom("smooth", true);
   }
 
+  // Following the stream used to hang off `streamContent`, which stopped firing
+  // once tokens were batched into `flushTokens`. Reading it here re-arms the
+  // scroll on every update.
+  //
+  // `tick()` resolves once the DOM is patched and still runs before the next
+  // paint; waiting a whole animation frame instead left the view one frame
+  // behind the growing answer, which showed up as a ~50px gap.
+  $: if (loading || streamContent) {
+    void tick().then(() => scrollToBottom("auto"));
+  }
+
+  // Persisted only when the message list actually changes, never on a token.
   $: if (history) {
     historyStorage.save(history);
-    setTimeout(scrollBottom, 0);
   }
 
   const getStoreResults = async (query: string) => {
@@ -70,22 +136,29 @@
         input,
         response,
       });
-      return {};
     } catch (e) {
       console.log("no DB");
-      return { documents: [], metadatas: [] };
     }
   };
 
   const sendMessage = async () => {
-    if (input.trim() === "") return;
-
-    // Add user message to the chat
+    if (input.trim() === "" || loading) return;
 
     const text = input;
 
-    // Set loading state to true
     loading = true;
+    errorMessage = "";
+    // `streamContent` was never cleared, so the previous answer stayed on screen
+    // for the whole next generation.
+    streamContent = "";
+    pendingTokens = "";
+    streamProvider = "";
+    // `frame` was reset to null while a frame was still queued, which left that
+    // callback free to flush the next answer's first tokens early.
+    if (frame !== null) {
+      cancelAnimationFrame(frame);
+      frame = null;
+    }
 
     let documents: string[] = [];
     let metadatas: string[] = [];
@@ -101,175 +174,245 @@
     // Limiter l'historique à 5 derniers messages
     const recentHistory = history.slice(-5);
 
-    // Make API call to Google Generative AI
-    const response = await ai.chat({
-      text,
-      useVectorestore: useStore,
-      history: [
-        { sender: "system", text: $promptSystemStore },
-        ...documents.map((text) => {
-          return { sender: "system", text };
-        }),
-        ...metadatas.map((text) => {
-          return { sender: "system", text };
-        }),
-        ...chunks.map((chunk) => {
-          return { sender: "system", text: chunk };
-        }),
-        { sender: "system", text: `you will respond in ${$language}` },
-        ...recentHistory,
-      ],
-      providerName: $providerStore,
-      stream: (text) => (streamContent += text),
-    });
+    // Every message owns its controller so the stop button can abort it and a
+    // component unmount cannot leave a request running.
+    controller = new AbortController();
 
-    // Add AI response to the chat
-    history = [
-      ...history,
-      {
-        sender: "system",
-        text: response.text,
-        provider: response.provider,
-        context: [...metadatas, ...documents],
-        insertToStore: () => {
-          insertToStore(text, response.text);
-          alert("ajouté !");
+    try {
+      const response = await ai.chat({
+        text,
+        useVectorstore: useStore,
+        signal: controller.signal,
+        history: [
+          { sender: "system", text: $promptSystemStore },
+          ...documents.map((text) => {
+            return { sender: "system", text };
+          }),
+          ...metadatas.map((text) => {
+            return { sender: "system", text };
+          }),
+          ...chunks.map((chunk) => {
+            return { sender: "system", text: chunk };
+          }),
+          { sender: "system", text: `you will respond in ${$language}` },
+          ...recentHistory,
+        ],
+        providerName: $providerStore,
+        stream: pushToken,
+        onProvider: (name: string) => (streamProvider = name),
+      });
+
+      const answer = response.text;
+
+      history = [
+        ...history,
+        {
+          sender: "assistant",
+          text: answer,
+          provider: response.provider,
+          context: [...metadatas, ...documents],
+          insertToStore: async () => {
+            await insertToStore(text, answer);
+          },
         },
-      },
-    ];
-
-    // Set loading state to false
-    loading = false;
-    streamContent = "";
+      ];
+    } catch (error) {
+      if (isAbortError(error)) {
+        // The user stopped the generation: keep what was already received.
+        const partial = flushTokens();
+        if (partial) {
+          // `streamProvider` is the model that was actually emitting, not the
+          // requested one: the badge must not claim the wrong provider.
+          history = [...history, { sender: "assistant", text: partial, provider: streamProvider }];
+        }
+      } else {
+        console.error("Chat failed:", error);
+        errorMessage = error instanceof Error ? error.message : String(error);
+      }
+    } finally {
+      controller = null;
+      // Apply whatever the last animation frame was still holding before the
+      // view is measured.
+      flushTokens();
+      loading = false;
+      // The last frame can land after `loading` goes false, so re-check the
+      // geometry once the DOM has settled.
+      void tick().then(() => scrollToBottom("auto"));
+    }
   };
 
-  onMount(async () => {
-    try {
-      if ($promptSystemStore == "" && $promptStore.length > 0) {
-        promptSystemStore.set($promptStore[0].text);
-      }
-      const providers = ai.getAll();
+  const stopGeneration = () => {
+    controller?.abort();
+    controller = null;
+  };
 
-      providersStore.set(providers);
-      if (!$providerStore) {
-        const provider = providers[0];
-        providerStore.set(provider);
+  onMount(() => {
+    // A single subscription, unsubscribed on destroy. The previous reactive
+    // `$: { promptStore.subscribe(...) }` created a new subscription on every
+    // run and never cleaned it up, duplicating the localStorage writes.
+    const unsubscribePrompt = promptStore.subscribe((prompts) => {
+      if (prompts.length > 0 && $promptSystemStore === "") {
+        promptSystemStore.set(prompts[0].text);
       }
+    });
 
-      store = new Embedding();
-      await store.initialize(); // Ensure the store is initialized
-    } catch (err) {}
+    const setup = async () => {
+      try {
+        const providers = ai.getAll();
+
+        providersStore.set(providers);
+        if (!$providerStore) {
+          providerStore.set(providers[0] ?? "backend");
+        }
+
+        store = new Embedding();
+        await store.initialize();
+      } catch (err) {
+        // The chat still works without the vector store, so this is not fatal.
+        console.warn("Embedding store unavailable:", err);
+      }
+    };
+    void setup();
+
+    return () => {
+      unsubscribePrompt();
+      controller?.abort();
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
   });
 </script>
 
-<div class="flex flex-col h-full w-full overflow-y-scroll p-2">
-  <!-- Message Container -->
+<!-- Single scroll container: there used to be an `overflow-y-scroll` wrapper
+     around an `overflow-y-auto` message list, so the page scrolled behind the
+     composer and auto-scroll fought the outer element. -->
+<div class="flex min-h-0 w-full flex-1 flex-col">
   <div
     bind:this={messageContainer}
-    class="min-h-[60vh] w-full p-4 mb-4 text-blue-200 font-mono overflow-y-auto rounded-b-lg"
-  >
-    <!-- Message History -->
-    {#each history as message}
-      <Displayer {message} />
-    {/each}
+    on:scroll={onScroll}
+    class="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-surface-sunken px-4 py-6 md:px-6"
+  >    <div class="mx-auto flex w-full max-w-4xl flex-col gap-5">
+      {#each history as message}
+        <Displayer {message} />
+      {/each}
 
-    <!-- Loading Indicator -->
-    {#if loading}
-      <BasicDiplayer message={streamContent} />
-    {/if}
+      {#if loading}
+        <BasicDiplayer message={streamContent} provider={streamProvider} />
+      {/if}
+
+      {#if errorMessage}
+        <p
+          class="rounded-lg border border-danger/40 bg-danger-soft px-4 py-3 text-sm text-danger"
+          role="alert"
+        >
+          {errorMessage}
+        </p>
+      {/if}
+    </div>
   </div>
 
-  <!-- Controls Section -->
-  <div class="flex flex-col gap-2 w-full">
-    <!-- Clear History Button -->
-    <div class="flex flex-row justify-end p-2 gap-2">
-      <button
-        on:click={() => {
-          history = [];
-        }}
-        class="bg-red-700 cursor-pointer text-gray-100 p-2 rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 border border-red-600 flex justify-center items-center font-mono text-xs"
-        title="Clear conversation history"
-      >
-        <svg
-          xmlns="http://www.w3.org/2009/svg"
-          class="h-4 w-4"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-            clip-rule="evenodd"
-          />
-        </svg>
-      </button>
-    </div>
 
-    <!-- Input Controls -->
-    <div class="w-full p-2 flex flex-col gap-3">
-      <!-- File Upload + Options -->
-      <div class="flex items-center gap-4">
-        <Modal
-          title={fileName || "load file"}
-          className="bg-blue-500 text-white max-w-32 overflow-hidden text-ellipsis whitespace-nowrap text-xs"
-        >
-          <Uploader bind:fileName bind:chunks hide={true} />
-        </Modal>
+  <div class="w-full shrink-0 border-t border-border bg-surface px-4 py-3 md:px-6">
+    <div class="mx-auto flex w-full max-w-4xl flex-col gap-2.5">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex min-w-0 items-center gap-3">
+          <Modal
+            title={fileName || "Joindre un document"}
+            className="btn-sm btn-outline max-w-56 overflow-hidden text-ellipsis whitespace-nowrap"
+          >
+            <Uploader bind:fileName bind:chunks hide={true} />
+          </Modal>
 
-        {#if store}
-          <label class="flex items-center gap-2 text-xs text-white">
-            <input type="checkbox" bind:checked={useStore} />
-            <span>Recherche documentaire</span>
-          </label>
+          {#if store}
+            <label
+              class="flex cursor-pointer select-none items-center gap-2 text-xs text-muted"
+            >
+              <input
+                type="checkbox"
+                bind:checked={useStore}
+                class="h-3.5 w-3.5 accent-[var(--primary)]"
+              />
+              <span>Recherche documentaire</span>
+            </label>
+          {/if}
+        </div>
+
+        {#if history.length > 0}
+          <button
+            on:click={() => (history = [])}
+            class="btn btn-sm btn-ghost shrink-0"
+            title="Effacer la conversation"
+            aria-label="Effacer la conversation"
+          >
+            <svg
+              class="h-3.5 w-3.5"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M3.5 5.5h13M8 5.5V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.5M5.5 5.5 6 15a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l.5-9.5"
+              ></path>
+            </svg>
+            <span>Effacer</span>
+          </button>
         {/if}
       </div>
 
-      <!-- Message Input -->
-      <div class="flex items-stretch w-full">
+      <div class="flex items-end gap-2">
         <textarea
           bind:value={input}
-          placeholder="Type your message..."
-          class="
-        flex-grow p-2 rounded-l-lg bg-gradient-to-br from-gray-200 to-white
-        text-blue-600 font-mono text-sm shadow-sm
-        focus:outline-none focus:ring-2 focus:ring-blue-500
-      "
+          rows="1"
+          placeholder="Posez votre question…"
+          class="field min-h-10 max-h-40 flex-1 resize-none py-2.5"
           on:keydown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               sendMessage();
             }
           }}
-          aria-label="Message input"
+          aria-label="Message"
         ></textarea>
 
         <VoiceInput bind:transcript={input} />
 
-        <!-- Send Button -->
-        <button
-          on:click={sendMessage}
-          title="Send message"
-          class="
-        p-2 rounded-r-lg bg-blue-600 text-gray-100
-        shadow-md border border-blue-600 font-mono text-xs
-        hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500
-        flex items-center justify-center
-      "
-        >
-          <svg
-            class="w-4 h-4 mr-1"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        {#if loading}
+          <!-- Stop button: aborts the fetch, which also releases the worker
+               thread blocked in the Flask generator. -->
+          <button
+            on:click={stopGeneration}
+            title="Arrêter la génération"
+            aria-label="Arrêter la génération"
+            class="btn btn-icon-lg btn-danger"
           >
-            <path
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <rect x="5" y="5" width="10" height="10" rx="1.5" />
+            </svg>
+          </button>
+        {:else}
+          <button
+            on:click={sendMessage}
+            title="Envoyer"
+            aria-label="Envoyer le message"
+            disabled={!input.trim()}
+            class="btn btn-icon-lg btn-primary"
+          >
+            <svg
+              class="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-            />
-          </svg>
-        </button>
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+          </button>
+        {/if}
       </div>
     </div>
   </div>

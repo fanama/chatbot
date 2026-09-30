@@ -1,104 +1,67 @@
 <script lang="ts">
   export let chat: () => void;
+
+  const features = [
+    {
+      title: "Réponses instantanées",
+      description: "Obtenez des réponses en temps réel à vos questions.",
+      path: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 0 1-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z",
+    },
+    {
+      title: "Mémoire de vos échanges",
+      description:
+        "Le contexte de la conversation est conservé pour des réponses cohérentes.",
+      path: "M12 8v4l2.5 2.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z",
+    },
+    {
+      title: "Recherche documentaire",
+      description:
+        "Importez des fichiers et interrogez vos propres documents en langage naturel.",
+      path: "M14 3v4a1 1 0 0 0 1 1h4M15 13H9m6 0h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h2m0-4H9a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h6",
+    },
+  ];
 </script>
 
-<main class="w-full bg-gray-50">
-  <section
-    class="hero py-24 px-4 text-center bg-gradient-to-r from-indigo-600 to-indigo-800 text-white"
-  >
-    <h1 class="text-4xl md:text-5xl font-bold mb-6">
+<!-- Was a nested `<main>` inside the shell's own `<main>`, and a flat
+     `rounded-xl` / `gap-8` / `mb-16` scale that matched no other page. -->
+<div>
+  <section class="bg-primary px-4 py-20 text-center text-primary-fg md:py-28">
+    <h1 class="text-4xl font-semibold tracking-tight md:text-5xl">
       {import.meta.env.VITE_TITLE || "Démo"}
     </h1>
-    <p class="text-xl md:text-2xl mb-10 max-w-2xl mx-auto">
+    <p class="mx-auto mt-4 max-w-2xl text-lg text-primary-fg/90 md:text-xl">
       Votre assistant conversationnel intelligent
     </p>
-    <button
-      class="bg-white text-indigo-600 hover:bg-indigo-100 font-bold py-3 px-8 cursor-pointer rounded-full transition duration-300 shadow-md hover:shadow-lg"
-      on:click={() => chat()}
-    >
-      Let's chat !
+    <button class="btn btn-lg btn-primary mt-8" on:click={() => chat()}>
+      Démarrer la discussion
     </button>
   </section>
 
-  <section class=" py-16 px-4">
-    <h2 class="text-3xl font-bold text-center mb-16 text-indigo-800">
-      Nos fonctionnalités
-    </h2>
+  <section class="px-4 py-14 md:px-6">
+    <h2 class="page-title mb-6">Nos fonctionnalités</h2>
     <div
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"
+      class="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
     >
-      <div
-        class=" p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1"
-      >
-        <div class="text-indigo-600 mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-10 w-10 mx-auto"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
+      {#each features as feature (feature.title)}
+        <div class="card p-6">
+          <div class="mb-3 text-primary">
+            <svg
+              class="h-6 w-6"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
               stroke-linecap="round"
               stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-          </svg>
+              aria-hidden="true"
+            >
+              <path d={feature.path} />
+            </svg>
+          </div>
+          <h3 class="text-base font-semibold text-foreground">{feature.title}</h3>
+          <p class="mt-1.5 text-sm text-muted">{feature.description}</p>
         </div>
-        <h3 class="text-xl font-semibold mb-4 text-indigo-800">
-          Réponses instantanées
-        </h3>
-        <p class="text-gray-600">
-          Obtenez des réponses en temps réel à vos questions
-        </p>
-      </div>
-      <div
-        class=" p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1"
-      >
-        <div class="text-indigo-600 mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-10 w-10 mx-auto"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-        </div>
-        <h3 class="text-xl font-semibold mb-4 text-indigo-800">
-          Apprentissage automatique
-        </h3>
-        <p class="text-gray-600">Notre IA s'améliore avec chaque interaction</p>
-      </div>
-      <div
-        class=" p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1"
-      >
-        <div class="text-indigo-600 mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-10 w-10 mx-auto"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-5"
-            />
-          </svg>
-        </div>
-        <h3 class="text-xl font-semibold mb-4 text-indigo-800">Multilingue</h3>
-        <p class="text-gray-600">Disponible dans plusieurs langues</p>
-      </div>
+      {/each}
     </div>
   </section>
-</main>
+</div>

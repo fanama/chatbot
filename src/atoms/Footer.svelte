@@ -1,16 +1,10 @@
-<!-- Footer ajouté -->
-<footer class="w-full bg-blue-900 text-white p-4 mt-auto">
+<footer
+  class="shrink-0 border-t border-border bg-surface-raised px-4 py-3 text-xs text-muted md:px-6"
+>
   <div
-    class="container mx-auto flex flex-col md:flex-row justify-between items-center"
+    class="mx-auto flex w-full max-w-4xl flex-col items-center justify-between gap-1 md:flex-row"
   >
-    <div class="mb-4 md:mb-0">
-      <p class="text-sm">
-        © 2025
-        {import.meta.env.VITE_TITLE || "Demo"}. Tous droits réservés.
-      </p>
-    </div>
-    <div class="flex space-x-4">
-      <div class="text-sm hover:underline">Rakotoasimbola Fanamperantsoa</div>
-    </div>
+    <p>© 2025 {import.meta.env.VITE_TITLE || "Démo"}. Tous droits réservés.</p>
+    <p>Rakotoasimbola Fanamperantsoa</p>
   </div>
 </footer>

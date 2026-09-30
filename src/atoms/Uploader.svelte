@@ -1,7 +1,7 @@
 <script lang="ts">
-  import pdf2md from "@opendocsg/pdf2md";
   let fileInput: HTMLInputElement;
   let textContent: string = "";
+  let uploadError = "";
   export let fileName = "";
   export let chunks: string[] = [];
   export let titles: string[] = [];
@@ -109,9 +109,8 @@
       ) {
         await processTextFile(file);
       } else {
-        alert(
-          "Unsupported file type. Please upload a PDF, text, or code file."
-        );
+        uploadError =
+          "Type de fichier non pris en charge. Importez un PDF, un fichier texte ou du code.";
         console.log(file.type);
       }
     }
@@ -125,21 +124,17 @@
 
   const processPdfFile = async (file: File) => {
     try {
-      let reader = new FileReader();
+      // Loaded on demand: pdf2md embeds a PDF.js runtime, and this component is
+      // mounted in both the chat and the document page, so a static import made
+      // every visitor download it.
+      const { default: pdf2md } = await import("@opendocsg/pdf2md");
 
-      reader.onload = async function (event) {
-        if (!event.target) {
-          return;
-        }
-        let arrayBuffer = event.target.result;
-        const markdown = await pdf2md(arrayBuffer);
-        splitTextIntoChunks(file.name, markdown);
-      };
-
-      reader.readAsArrayBuffer(file);
+      const arrayBuffer = await file.arrayBuffer();
+      const markdown = await pdf2md(arrayBuffer);
+      splitTextIntoChunks(file.name, markdown);
     } catch (error) {
       console.error("Error uploading file:", error);
-      alert("Error uploading file. Please try again.");
+      uploadError = "Erreur lors de la lecture du fichier. Réessayez.";
     }
   };
 
@@ -153,52 +148,64 @@
     fileName = "";
     chunks = [];
     titles = [];
+    uploadError = "";
   }
 </script>
 
-<main class="p-8 bg-white text-black w-full h-fit space-y-4">
-  <h1 class="text-2xl font-bold mb-4">Upload File</h1>
+<!-- Was a nested `<main>` inside the shell's own `<main>`, padded `p-8` while
+     the panel next to it used `p-4`, and its own `text-2xl` heading now that
+     the page carries the title. -->
+<section class="card flex flex-col p-4">
+  <h2 class="section-label mb-3">Import</h2>
 
-  <form on:submit={onSubmit} class="flex flex-col gap-4 h-full">
+  <form on:submit={onSubmit} class="flex flex-col gap-3">
     <input
       type="file"
-      name="video"
+      name="file"
       required
-      class="block w-full text-sm text-gray-500
-      file:mr-4 file:py-2 file:px-4
-      file:rounded-md file:border-0
-      file:text-sm file:font-semibold
-      file:bg-blue-50 file:text-blue-700
-      hover:file:bg-blue-100
-      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      class="block w-full rounded-md border border-border bg-surface-raised p-2 text-sm text-muted
+        file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-surface-sunken
+        file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground
+        hover:file:bg-surface-hover
+        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
     />
     {#if chunks.length == 0}
-      <button
-        type="submit"
-        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-green-300 transition duration-300"
-      >
-        Load
+      <button type="submit" class="btn btn-md btn-primary self-start">
+        Charger le fichier
       </button>
     {/if}
   </form>
 
+  {#if uploadError}
+    <p class="mt-3 text-sm text-danger" role="alert">{uploadError}</p>
+  {/if}
+
   {#if chunks.length > 0 && !hide}
     <div
-      class="mt-4 h-screen overflow-y-scroll bg-gray-100 flex flex-col gap-2"
+      class="mt-4 max-h-96 min-h-0 flex-1 space-y-2 overflow-y-auto"
     >
-      {#each chunks as chunk}
-        <pre class="text-blue-600 p-2 rounded-lg m-2 border w-fit">{chunk}</pre>
+      {#each chunks as chunk, i (i)}
+        <pre
+          class="m-0 w-full whitespace-pre-wrap break-words rounded-md border border-border bg-surface-sunken p-2.5 text-xs text-foreground">{chunk}</pre
+        >
       {/each}
     </div>
   {:else if chunks.length > 0}
-    <button
-      class="px-4 py-2 w-full bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-red-300 transition duration-300"
-      on:click={unload}
+    <div
+      class="mt-3 flex items-center gap-2 rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm text-foreground"
+      role="status"
     >
-      Unload
-    </button>
-    <div>Chargé !</div>
+      <span class="h-2 w-2 shrink-0 rounded-full bg-success" aria-hidden="true"
+      ></span>
+      <span class="min-w-0 truncate">
+        {chunks.length} section{chunks.length > 1 ? "s" : ""} prête
+        {chunks.length > 1 ? "s" : ""} à envoyer.
+      </span>
+      <button class="btn btn-xs btn-outline ml-auto shrink-0" on:click={unload}>
+        Retirer
+      </button>
+    </div>
   {:else}
-    <p class="text-gray-500 mt-4">No chunks available.</p>
+    <p class="mt-3 text-sm text-muted">Aucun contenu chargé.</p>
   {/if}
-</main>
+</section>

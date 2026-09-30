@@ -7,7 +7,17 @@ export class LocalStorage<T> {
 
     const localString = localStorage.getItem(key) || "[]";
 
-    const localValues = JSON.parse(localString) as T[];
+    let localValues: T[] = [];
+    try {
+      const parsed = JSON.parse(localString);
+      if (Array.isArray(parsed)) {
+        localValues = parsed;
+      }
+    } catch {
+      // A corrupted entry used to throw during module evaluation, which broke
+      // the whole page: fall back to the defaults instead.
+      console.warn(`localStorage["${key}"] is not valid JSON, using defaults`);
+    }
 
     if (localValues.length <= 0) {
       this.values = defaultValues;
@@ -19,7 +29,13 @@ export class LocalStorage<T> {
   }
 
   save(values: T[]) {
-    localStorage.setItem(this.key, JSON.stringify(values));
+    this.values = values;
+    try {
+      localStorage.setItem(this.key, JSON.stringify(values));
+    } catch (error) {
+      // Quota exceeded: losing persistence is better than breaking the chat.
+      console.error(`Failed to persist "${this.key}"`, error);
+    }
   }
 
   getAll(): T[] {
@@ -28,23 +44,20 @@ export class LocalStorage<T> {
 
   add(value: T): T[] {
     const values = [...this.values, value];
-    localStorage.setItem(this.key, JSON.stringify(values));
-    this.values = values;
-    alert(`${this.key} added`);
-
+    this.save(values);
     return values;
   }
+
   remove(value: T): T[] {
     const values = this.values.filter((v) => v != value);
-    localStorage.setItem(this.key, JSON.stringify(values));
-    this.values = values;
+    this.save(values);
     return values;
   }
 
   removeAll(): T[] {
-    const values: T[] = [];
-    localStorage.clear();
-    this.values = values;
-    return values;
+    // Was `localStorage.clear()`: it wiped the history, the prompts and the user
+    // session of every other key, not just this one.
+    this.save([]);
+    return this.values;
   }
 }

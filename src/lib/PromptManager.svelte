@@ -5,6 +5,7 @@
   import type { PromptEntity } from "../domain/entities/prompt";
   import { promptStore, promptStorage, promptSystemStore } from "./store";
   import LanguageSelector from "../atoms/LanguageSelector.svelte";
+  import { onMount } from "svelte";
 
   // Local state for managing the current prompt being edited
   let currentPrompt: PromptEntity | null = null;
@@ -62,27 +63,39 @@
     showPromptList = !showPromptList;
   }
 
-  // Reactive statement to save prompts to storage whenever promptStore updates
-  $: {
-    promptStore.subscribe((value) => {
+  onMount(() => {
+    // A single subscription, unsubscribed on destroy. The reactive
+    // `$: { promptStore.subscribe(...) }` ran on every invalidation, leaking one
+    // subscription per run and writing to localStorage repeatedly. This
+    // component is remounted on each navigation, so the leak compounded.
+    return promptStore.subscribe((value) => {
       promptStorage.save(value);
     });
-  }
+  });
 </script>
 
-<div
-  class="w-full text-white font-mono flex flex-col gap-2 p-2 overflow-scroll"
->
-  <LanguageSelector />
+<div class="page page-pad flex flex-col gap-4">
+  <header>
+    <h1 class="page-title">Paramètres</h1>
+    <p class="page-sub">
+      Langue des réponses et instructions système envoyées au modèle.
+    </p>
+  </header>
+
+  <div class="card p-4">
+    <LanguageSelector />
+  </div>
+
+  <!-- ProviderManager already renders its own bordered panel. -->
+  <ProviderManager />
+
   <button
     on:click={togglePage}
-    class="p-2 text-blue-700 bg-gradient-to-br from-white to-blue-200 cursor-pointer rounded w-full"
+    class="btn btn-md btn-outline self-start"
   >
-    {!showPromptList ? "New" : "Return"}
+    {!showPromptList ? "Nouveau prompt" : "← Retour à la liste"}
   </button>
-  <div class="p-2">
-    <ProviderManager />
-  </div>
+
   {#if showPromptList}
     <PromptEditor
       bind:title
@@ -93,11 +106,9 @@
       {resetForm}
     />
   {:else}
-    <div
-      class="h-full w-full text-white p-4 rounded-md flex-grow overflow-scroll"
-    >
-      <div class="h-full overflow-y-auto grid grid-cols-1 gap-1">
-        {#each $promptStore as prompt}
+    <div class="flex min-h-0 w-full flex-1 flex-col">
+      <div class="grid min-h-0 grid-cols-1 gap-3 overflow-y-auto lg:grid-cols-2">
+        {#each $promptStore as prompt (prompt.title + prompt.text)}
           <PromptDisplayer
             {prompt}
             {selectPrompt}

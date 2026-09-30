@@ -1,65 +1,78 @@
 <script lang="ts">
-  import HeadPhones from "../assets/headphones.svg";
-  import Stop from "../assets/stop.svg";
+  import { onDestroy } from "svelte";
   import { language } from "../lib/store";
 
   export let textValue = "";
-  let synth = window.speechSynthesis;
+  // One instance per message, and never cancelled on unmount: the voice kept
+  // reading after leaving the conversation. One per page is enough.
+  const synth = window.speechSynthesis;
   let isSpeaking = false;
-  let isStoped = false;
+
+  onDestroy(() => {
+    synth.cancel();
+  });
 
   function startSpeaking() {
-    isStoped = false;
-    if (synth.speaking) {
-      synth.cancel();
-    }
-    const chunks = textValue.split("\n");
-    for (const text of chunks) {
-      if (isStoped) {
-        break; // Exit the loop if stop was clicked
-      }
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = $language; // Set the language
-      synth.speak(utterance);
-      isSpeaking = true;
+    synth.cancel();
 
+    for (const line of textValue.split("\n")) {
+      if (!line.trim()) continue;
+      const utterance = new SpeechSynthesisUtterance(line);
+      utterance.lang = $language;
       utterance.onend = () => {
         isSpeaking = false;
       };
+      synth.speak(utterance);
     }
-    isSpeaking = false;
+    isSpeaking = true;
   }
 
   function stopSpeaking() {
-    if (synth.speaking) {
-      synth.cancel();
-      isSpeaking = false;
-      isStoped = true;
-    }
+    synth.cancel();
+    isSpeaking = false;
   }
 </script>
 
-<div class="flex flex-col space-y-4 text-xs">
-  <div class="flex space-x-2">
-    <button
-      id="speakButton"
-      class="px-4 py-2 text-white bg-blue-500 rounded-md cursor-pointer"
-      on:click={startSpeaking}
+<div class="flex items-center gap-1">
+  <button
+    type="button"
+    class="btn btn-xs btn-ghost"
+    on:click={startSpeaking}
+    disabled={!textValue.trim() || isSpeaking}
+    aria-label="Lire le message à voix haute"
+    title="Lire à voix haute"
+  >
+    <svg
+      class="h-3.5 w-3.5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
     >
-      <img src={HeadPhones} alt="listen..." class="w-[1rem] h-[1em]" />
-    </button>
-    <button
-      id="stopButton"
-      class="px-4 py-2 text-white bg-red-500 rounded-md cursor-pointer"
-      on:click={stopSpeaking}
+      <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
+      <path d="M4 14h2.5a1.5 1.5 0 0 1 1.5 1.5v2A1.5 1.5 0 0 1 6.5 19H6a2 2 0 0 1-2-2z" />
+      <path d="M20 14h-2.5a1.5 1.5 0 0 0-1.5 1.5v2a1.5 1.5 0 0 0 1.5 1.5h.5a2 2 0 0 0 2-2z" />
+    </svg>
+    <span>Écouter</span>
+  </button>
+  <button
+    type="button"
+    class="btn btn-xs btn-ghost"
+    on:click={stopSpeaking}
+    disabled={!isSpeaking}
+    aria-label="Arrêter la lecture"
+    title="Arrêter"
+  >
+    <svg
+      class="h-3.5 w-3.5"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
     >
-      <img src={Stop} alt="listen..." class="w-[1rem] h-[1em]" />
-    </button>
-  </div>
+      <rect x="5" y="5" width="10" height="10" rx="1.5" />
+    </svg>
+  </button>
 </div>
-
-<style>
-  .hidden {
-    display: none;
-  }
-</style>

@@ -1,15 +1,425 @@
 @import "tailwindcss";
+@import "@fontsource-variable/inter/standard.css";
 
+/* Class-based dark mode. Tailwind v4 dropped the `dark:` media-query default,
+   so it has to be declared: without it every `dark:` utility would be a no-op. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Semantic tokens. `inline` makes the utilities emit `var(--surface)` directly
+   instead of copying the resolved value, which is what lets `.dark` override
+   them at runtime. */
+@theme inline {
+  --font-sans:
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-hover: var(--surface-hover);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-soft: var(--primary-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+}
+
+:root {
+  color-scheme: light;
+
+  --surface: oklch(0.985 0.002 247);
+  --surface-raised: oklch(1 0 0);
+  --surface-sunken: oklch(0.965 0.004 247);
+  --surface-hover: oklch(0.945 0.008 247);
+  --foreground: oklch(0.24 0.02 258);
+  --muted: oklch(0.53 0.02 258);
+  --border: oklch(0.91 0.007 258);
+  --border-strong: oklch(0.83 0.012 258);
+  --primary: oklch(0.52 0.19 261);
+  --primary-fg: oklch(0.99 0.005 247);
+  --primary-soft: oklch(0.945 0.028 261);
+  --danger: oklch(0.55 0.21 25);
+  --danger-soft: oklch(0.955 0.024 25);
+  --success: oklch(0.55 0.13 155);
+
+  /* Code surface. Deliberately NOT redefined in `.dark`: Prism's atom-dark
+     token colours are tuned for a dark background, so keeping one dark surface
+     in both themes is what makes code blocks readable either way. */
+  --code-surface: oklch(0.24 0.012 258);
+  --code-border: oklch(0.33 0.014 258);
+  --code-fg: oklch(0.92 0.008 258);
+  --code-chip: oklch(0.3 0.015 258);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --surface: oklch(0.185 0.014 258);
+  --surface-raised: oklch(0.235 0.017 258);
+  --surface-sunken: oklch(0.155 0.012 258);
+  --surface-hover: oklch(0.28 0.02 258);
+  --foreground: oklch(0.95 0.008 258);
+  --muted: oklch(0.7 0.018 258);
+  --border: oklch(0.31 0.018 258);
+  --border-strong: oklch(0.4 0.022 258);
+  --primary: oklch(0.68 0.15 255);
+  --primary-fg: oklch(0.17 0.02 258);
+  --primary-soft: oklch(0.3 0.06 258);
+  --danger: oklch(0.66 0.19 25);
+  --danger-soft: oklch(0.3 0.08 25);
+  --success: oklch(0.7 0.13 155);
+}
 
 body {
   margin: 0;
   min-height: 100%;
-  width: 100%;
-  background-color: green;
+  /* Was `green`, shipped in the build and visible on overscroll. */
+  background-color: var(--surface);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 #app {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Thin theme-aware scrollbars. The browser default was heavy in both themes. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--border-strong);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted);
+}
+
+/* ---------------------------------------------------------------------------
+   Shared component classes.
+
+   Before this layer, the app carried six border radii, four button heights,
+   three font sizes and three input backgrounds, with each page inventing its
+   own combination. These are the single definition now, so a change lands
+   everywhere at once. Tailwind emits them in the `components` cascade layer,
+   which sits before `utilities`: a utility on the element still wins.
+   --------------------------------------------------------------------------- */
+@layer components {
+  /* Buttons. `hover:opacity-90` replaces the `hover:bg-*` rules that sat on
+     top of an identical `bg-*` and so produced no visible change at all. */
+  .btn {
+    @apply inline-flex h-9 select-none items-center justify-center gap-2 whitespace-nowrap
+      rounded-md text-sm font-medium transition-colors
+      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary
+      disabled:pointer-events-none disabled:opacity-45;
+  }
+
+  /* The size modifiers only need to override the `h-9` on `.btn`. */
+  .btn-md {
+    @apply h-9 px-3.5;
+  }
+  .btn-sm {
+    @apply h-8 px-3;
+  }
+  /* Inline actions under a message: provider badge, copy, listen. */
+  .btn-xs {
+    @apply h-7 gap-1.5 px-2 text-[0.7rem];
+  }
+  /* Hero call to action. */
+  .btn-lg {
+    @apply h-11 px-6 text-base;
+  }
+  .btn-icon {
+    @apply h-9 w-9 shrink-0 p-0;
+  }
+  /* Composer buttons sit one step above the standard size because they share
+     the row with the textarea. */
+  .btn-icon-lg {
+    @apply h-10 w-10 shrink-0 p-0;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-fg hover:opacity-90;
+  }
+  .btn-outline {
+    @apply border border-border bg-surface-raised text-foreground hover:bg-surface-hover;
+  }
+  .btn-ghost {
+    @apply text-muted hover:bg-surface-hover hover:text-foreground;
+  }
+  .btn-danger {
+    @apply bg-danger text-primary-fg hover:opacity-90;
+  }
+
+  /* Form controls. One background level (`surface-raised`) and one focus
+     treatment, where there were three of each. */
+  .field {
+    @apply w-full rounded-md border border-border bg-surface-raised px-3 py-2 text-sm
+      text-foreground shadow-sm transition-colors
+      placeholder:text-muted focus:border-primary focus:outline-none;
+  }
+  .field-sm {
+    @apply h-9 py-0;
+  }
+
+  /* Surfaces and page scaffolding. */
+  .card {
+    @apply rounded-lg border border-border bg-surface-raised;
+  }
+  .page {
+    @apply h-full w-full overflow-y-auto bg-surface;
+  }
+  .page-pad {
+    @apply px-4 py-6 md:px-6;
+  }
+  .page-title {
+    @apply text-xl font-semibold tracking-tight text-foreground;
+  }
+  .page-sub {
+    @apply mt-1 text-sm text-muted;
+  }
+  .section-label {
+    @apply text-xs font-medium uppercase tracking-wide text-muted;
+  }
+
+  /* Progress bar: `Document.svelte` showed a bare "Chargement… 42%" line with
+     a computed percentage available but unused. */
+  .progress {
+    @apply h-1.5 w-full overflow-hidden rounded-full bg-surface-sunken;
+  }
+  .progress-bar {
+    @apply h-full rounded-full bg-primary transition-[width] duration-200;
+  }
+
+  /* The native `<select>` rendered with the UA styling in the middle of fully
+     custom fields. Composed with `.field` in the markup: `@apply` cannot
+     reference another class declared in this same layer. */
+  .select-field {
+    @apply cursor-pointer appearance-none bg-no-repeat pr-9;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 16px) calc(50% + 1px), calc(100% - 11px) calc(50% + 1px);
+    background-size: 5px 5px, 5px 5px;
+  }
+  .select-field option {
+    background-color: var(--surface-raised);
+    color: var(--foreground);
+  }
+}
+
+/* Markdown emitted by `marked` had no typography at all: headings, lists,
+   tables and quotes inherited the bubble and were indistinguishable. */
+@layer components {
+  .chat-prose > *:first-child {
+    margin-top: 0;
+  }
+  .chat-prose > *:last-child {
+    margin-bottom: 0;
+  }
+
+  .chat-prose h1,
+  .chat-prose h2,
+  .chat-prose h3,
+  .chat-prose h4 {
+    font-weight: 650;
+    line-height: 1.3;
+    margin: 1.25em 0 0.5em;
+  }
+  .chat-prose h1 {
+    font-size: 1.35em;
+  }
+  .chat-prose h2 {
+    font-size: 1.2em;
+  }
+  .chat-prose h3 {
+    font-size: 1.05em;
+  }
+  .chat-prose h4 {
+    font-size: 1em;
+    color: var(--muted);
+  }
+
+  .chat-prose p,
+  .chat-prose ul,
+  .chat-prose ol,
+  .chat-prose blockquote,
+  .chat-prose table {
+    margin: 0.75em 0;
+  }
+
+  .chat-prose ul,
+  .chat-prose ol {
+    padding-left: 1.4em;
+  }
+  .chat-prose ul {
+    list-style: disc;
+  }
+  .chat-prose ol {
+    list-style: decimal;
+  }
+  .chat-prose li {
+    margin: 0.3em 0;
+  }
+  .chat-prose li::marker {
+    color: var(--muted);
+  }
+
+  .chat-prose a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .chat-prose blockquote {
+    border-left: 3px solid var(--border-strong);
+    padding-left: 0.9em;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .chat-prose hr {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 1.5em 0;
+  }
+
+  .chat-prose strong {
+    font-weight: 650;
+    color: var(--foreground);
+  }
+
+  .chat-prose code {
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--border);
+    border-radius: 0.3em;
+    padding: 0.12em 0.35em;
+    font-size: 0.88em;
+    font-family: var(--font-mono);
+  }
+  .chat-prose table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.94em;
+    display: block;
+    overflow-x: auto;
+  }
+  .chat-prose th,
+  .chat-prose td {
+    border: 1px solid var(--border);
+    padding: 0.45em 0.7em;
+    text-align: left;
+  }
+  .chat-prose th {
+    background-color: var(--surface-sunken);
+    font-weight: 600;
+  }
+
+  /* Code blocks and their copy button are emitted by the `marked` renderer as
+     a sibling pair, so they are laid out here rather than in the bubble. */
+  .chat-prose .code-block {
+    position: relative;
+    margin: 0.9em 0;
+  }
+  .chat-prose .code-block pre {
+    margin: 0;
+    overflow-x: auto;
+    background-color: var(--code-surface);
+    border: 1px solid var(--code-border);
+    border-radius: 0.5rem;
+    padding: 0.85rem 1rem;
+    font-size: 0.875em;
+    line-height: 1.6;
+    color: var(--code-fg);
+  }
+  .chat-prose .code-block pre code {
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: 1em;
+    color: inherit;
+  }
+
+  /* The language chip was emitted by the renderer but never given any rule, so
+     it rendered as bare unstyled text on top of the block. */
+  .chat-prose .code-lang {
+    position: absolute;
+    top: 0.45rem;
+    left: 0.6rem;
+    z-index: 1;
+    padding: 0.15rem 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--code-fg);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .chat-prose .copy-button {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.55rem;
+    font-size: 0.7rem;
+    font-family: var(--font-sans);
+    line-height: 1;
+    color: var(--code-fg);
+    background-color: var(--code-chip);
+    border: 1px solid var(--code-border);
+    border-radius: 0.35rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+  /* On a touch device there is no hover to reveal it, and it would sit on top
+     of the language chip. */
+  @media (hover: none) {
+    .chat-prose .copy-button {
+      opacity: 1;
+    }
+  }
+  .chat-prose .code-block:hover .copy-button,
+  .chat-prose .copy-button:focus-visible {
+    opacity: 1;
+  }
+  .chat-prose .copy-button:hover {
+    color: #fff;
+    border-color: var(--code-fg);
+  }
+}
+
+/* Prism's vendored theme styled code through `.message-container pre:has(code)`
+   and hardcoded a dark inline background (#1d1f21) on the light bubble. The
+   tokens above own the code surface now. */
+.message-container pre:has(code) {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+:not(pre) > code[class*="language-"] {
+  background-color: transparent;
+  border: 0;
 }
