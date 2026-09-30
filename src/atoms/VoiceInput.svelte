@@ -1,11 +1,20 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { language } from "../lib/store";
 
   export let transcript = "";
   let canRecord = true;
-  let recognition: any;
+  let recognition: any = null;
   let isListening = false;
+  let baseTranscript = "";
+
+  onDestroy(() => {
+    if (recognition) {
+      try {
+        recognition.abort();
+      } catch {}
+    }
+  });
 
   onMount(() => {
     const SpeechRecognition =
@@ -14,25 +23,38 @@
       (window as any).mozSpeechRecognition ||
       (window as any).msSpeechRecognition;
 
-    if (SpeechRecognition) {
+    if (!SpeechRecognition) {
+      canRecord = false;
+      return;
+    }
+
+    try {
       recognition = new SpeechRecognition();
-      recognition.continuous = true; // Keep listening even after a pause
-      recognition.interimResults = true; // Show interim results
-      recognition.maxAlternatives = 1; // Number of possible transcriptions
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
         isListening = true;
       };
 
       recognition.onresult = (event: any) => {
-        let newTranscript = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          if (event.results[i].isFinal) {
-            newTranscript += event.results[i][0].transcript;
+        let interimText = "";
+        let finalText = "";
+
+        for (let i = 0; i < event.results.length; i++) {
+          const res = event.results[i];
+          if (res.isFinal) {
+            finalText += res[0].transcript;
+          } else {
+            interimText += res[0].transcript;
           }
         }
-        if (newTranscript) {
-          transcript += newTranscript;
+
+        const currentSpeech = (finalText + interimText).trim();
+        if (currentSpeech) {
+          const separator = baseTranscript && !baseTranscript.endsWith(" ") ? " " : "";
+          transcript = baseTranscript + separator + currentSpeech;
         }
       };
 
@@ -41,60 +63,54 @@
       };
 
       recognition.onerror = (event: any) => {
-        let errorMessage = "";
-        switch (event.error) {
-          case "network":
-            errorMessage =
-              "Network error. Please check your internet connection.";
-            break;
-          case "not-allowed":
-            errorMessage = "Permission to use microphone is blocked.";
-            break;
-          case "no-speech":
-            errorMessage = "No speech was detected.";
-            break;
-          case "audio-capture":
-            errorMessage = "Microphone is not available.";
-            break;
-          default:
-            errorMessage = "An error occurred during speech recognition.";
-            break;
+        // En cas de simple absence de voix détectée, on ne stoppe pas l'écoute agressivement
+        if (event.error === "no-speech") {
+          return;
         }
+        console.warn("Speech recognition error:", event.error);
         isListening = false;
       };
-    } else {
+    } catch (err) {
+      console.error("Failed to initialize SpeechRecognition:", err);
       canRecord = false;
-      console.error("Your browser does not support speech recognition.");
     }
   });
 
   function startRecording() {
-    if (recognition) {
-      recognition.lang = $language; // Update language before starting
+    if (!recognition) return;
+    try {
+      baseTranscript = transcript ? transcript.trim() : "";
+      recognition.lang = $language;
       recognition.start();
+    } catch (err) {
+      console.warn("Could not start speech recognition:", err);
     }
   }
 
   function stopRecording() {
-    if (recognition) {
+    if (!recognition) return;
+    try {
       recognition.stop();
+    } catch (err) {
+      console.warn("Could not stop speech recognition:", err);
     }
+    isListening = false;
   }
 </script>
 
 {#if canRecord}
   <button
-    id={isListening ? "stopButton" : "startButton"}
+    type="button"
     class={`btn btn-icon-lg btn-outline ${
       isListening ? "border-primary text-primary" : "text-muted"
     }`}
     on:click={isListening ? stopRecording : startRecording}
     aria-label={isListening ? "Arrêter l'enregistrement" : "Dicter le message"}
-    title={isListening ? "Arrêter" : "Dicter"}
+    title={isListening ? "Arrêter la dictée" : "Dicter"}
   >
     {#if isListening}
       <span
-        class="h-2 w-2 rounded-full bg-danger"
+        class="h-2.5 w-2.5 animate-pulse rounded-full bg-danger"
         aria-hidden="true"
         title="Enregistrement en cours"
       ></span>
@@ -106,12 +122,12 @@
         stroke="currentColor"
         stroke-width="1.9"
         stroke-linecap="round"
+        stroke-linejoin="round"
         aria-hidden="true"
       >
-        <path d="M12 3v3M5.6 6.6l2.1 2.1M4 13h3M9.7 18.3l-2.1 2.1M18 13h3" />
-        <rect x="9" y="8" width="6" height="12" rx="3" />
-        <circle cx="19" cy="5" r="1.6" />
-        <path d="M4 5h2.5" />
+        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+        <line x1="12" y1="19" x2="12" y2="22" />
       </svg>
     {/if}
   </button>

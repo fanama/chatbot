@@ -103,15 +103,78 @@ RAG chatbot with a Svelte frontend and a Flask backend. Conversations are answer
    `/query`, `/documents`, `/empty-documents` and `/initialize` to
    `127.0.0.1:3000`, so leaving `VITE_URL` empty works out of the box.
 
-## Production build
+## Production build & Deployment
+
+### 1. Build local / Test de build
 
 ```bash
-bun run build      # outputs dist/
-bun run preview    # serves the built frontend
+bun run build      # génère dist/
+bun run preview    # prévisualise le frontend compilé
 ```
 
-The backend serves the built frontend from `dist/`, so deploying means copying
-`dist/` next to `server.py`.
+### 2. Déploiement en ligne (VPS / Serveur Dédié avec Ollama & Nginx)
+
+L'architecture recommandée en production combine :
+- **Ollama** (exécuté en local ou GPU pour la confidentialité et zéro coût API)
+- **Gunicorn** (`gthread`) servant l'application Flask
+- **Nginx** en reverse-proxy pour servir les assets statiques, gérer HTTPS et router le streaming SSE (`/chat-sse`)
+- **Systemd** pour la supervision et le redémarrage automatique
+
+#### A. Préparation du serveur (Ubuntu / Debian)
+
+1. **Cloner le projet sur le serveur :**
+   ```bash
+   sudo mkdir -p /var/www/chatbot
+   sudo chown -R $USER:$USER /var/www/chatbot
+   git clone <URL_DU_DEPOT> /var/www/chatbot
+   cd /var/www/chatbot
+   ```
+
+2. **Configurer l'environnement `.env` :**
+   ```bash
+   cp .env.example .env # ou créez votre .env avec les clés API de secours
+   ```
+
+3. **Lancer le script de déploiement automatique :**
+   ```bash
+   sudo chmod +x deploy/setup.sh
+   sudo ./deploy/setup.sh votre-domaine.com
+   ```
+
+#### B. Détail de la configuration manuelle
+
+Si vous préférez déployer pas-à-pas :
+
+1. **Installer Ollama et le modèle :**
+   ```bash
+   curl -fsSL https://ollama.com/install.sh | sh
+   ollama pull granite4:7b-a1b-h
+   sudo systemctl enable --now ollama
+   ```
+
+2. **Installer les dépendances & compiler :**
+   ```bash
+   uv sync
+   bun install && bun run build
+   ```
+
+3. **Activer le service Systemd Backend :**
+   ```bash
+   sudo cp deploy/systemd/chatbot-backend.service /etc/systemd/system/
+   sudo systemctl daemon-reload
+   sudo systemctl enable --now chatbot-backend
+   ```
+
+4. **Configurer Nginx & SSL :**
+   - Copier `deploy/nginx/chatbot.conf` dans `/etc/nginx/sites-available/`
+   - Adapter le `server_name` avec votre nom de domaine
+   - Générer le certificat SSL :
+     ```bash
+     sudo certbot --nginx -d votre-domaine.com
+     sudo systemctl reload nginx
+     ```
+
+*Note importante sur Nginx & SSE* : La directive `proxy_buffering off;` est indispensable dans la configuration Nginx pour que le flux de tokens SSE (`/chat-sse`) arrive en temps réel dans le navigateur sans mise en mémoire tampon.
 
 ## API
 

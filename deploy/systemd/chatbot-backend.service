@@ -1,0 +1,34 @@
+[Unit]
+Description=Chatbot Flask Backend (Gunicorn)
+After=network.target ollama.service
+Wants=ollama.service
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/chatbot
+Environment="PATH=/var/www/chatbot/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+EnvironmentFile=/var/www/chatbot/.env
+
+# Gunicorn avec workers gthread pour le streaming SSE sans bloquer l'I/O
+ExecStart=/var/www/chatbot/.venv/bin/gunicorn \
+    --workers 2 \
+    --threads 4 \
+    --worker-class gthread \
+    --bind 127.0.0.1:3000 \
+    --timeout 300 \
+    --keep-alive 5 \
+    --access-logfile /var/log/chatbot/access.log \
+    --error-logfile /var/log/chatbot/error.log \
+    server:app
+
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=30
+PrivateTmp=true
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
