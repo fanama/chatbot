@@ -2,19 +2,10 @@ import logging
 from typing import Any, Dict
 
 from backend.rag import extract_urls
-from backend.vectoreStoreClient.chromaDBclient import get_client
-from backend.youtube.youtubeToText import Youtube
+from backend.vectorestore.chroma_client import get_client
+from backend.youtube.youtubeToText import get_transcript
 
 logger = logging.getLogger(__name__)
-
-_transcript = None
-
-
-def transcript() -> Youtube:
-    global _transcript
-    if _transcript is None:
-        _transcript = Youtube()
-    return _transcript
 
 
 def query_collection_tool(input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -55,10 +46,10 @@ def query_collection_tool(input_data: Dict[str, Any]) -> Dict[str, Any]:
     for url in extract_urls(query_texts[0]):
         try:
             if "youtube.com" in url or "youtu.be" in url:
-                text = transcript().generateText(url)
+                text = get_transcript().generateText(url)
                 results["metadatas"][0].append({"transcript": text})
             else:
-                text = transcript().generateMArkdown(url)
+                text = get_transcript().generateMArkdown(url)
                 results["metadatas"][0].append({"web page": text})
         except Exception:
             logger.warning("Could not fetch content for %s", url, exc_info=True)

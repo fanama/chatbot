@@ -9,7 +9,7 @@ import logging
 import re
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-from backend.vectoreStoreClient.chromaDBclient import get_client
+from backend.vectorestore.chroma_client import get_client
 
 logger = logging.getLogger(__name__)
 

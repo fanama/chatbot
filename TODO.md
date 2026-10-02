@@ -8,7 +8,7 @@ Dernière mise à jour : 30 septembre 2026
 
 ### Sécurité & Architecture Backend
 - [x] Sécurisation des clés LLM : retrait des appels directs côté client et migration complète vers le backend Flask.
-- [x] Gestion centralisée des fournisseurs LLM avec chaîne de fallback (Ollama local -> Mistral -> Google Gemini -> OpenRouter).
+- [x] Gestion centralisée des fournisseurs LLM avec chaîne de fallback (Mistral -> Google Gemini -> OpenRouter -> Ollama local).
 - [x] Streaming SSE robuste via la route `/chat-sse` avec transmission préalable du badge provider réel (`provider -> text -> [DONE]`).
 - [x] Gestion de l'interruption côté client et libération immédiate du worker Flask à l'annulation.
 - [x] Migration de l'environnement Python vers `uv` / `pyproject.toml` (suppression de `requirements.txt`).
@@ -44,7 +44,7 @@ Dernière mise à jour : 30 septembre 2026
 
 - [ ] **Optimisation du bundle frontend** : Configurer `build.rollupOptions.output.manualChunks` ou l'import dynamique pour découper les chunks JS dépassant 500 kB (signalé par Vite).
 - [ ] **Nettoyage des avertissements d'accessibilité (A11y)** :
-  - `src/atoms/Diplayer.svelte` : Associer des gestionnaires clavier aux clics d'action média/seek.
+  - `src/atoms/Displayer.svelte` : Associer des gestionnaires clavier aux clics d'action média/seek.
   - `src/App.svelte` : Fournir un fichier de sous-titres `.vtt` pour la vidéo de guide (ou gérer la piste manquante selon le besoin).
 - [ ] **Nettoyage des paramètres d'appel** : Supprimer l'envoi de `providerName` par `Chatbot.svelte` si Flask ne l'exploite plus, ou le réintégrer formellement si la sélection dynamique côté client est requise.
 

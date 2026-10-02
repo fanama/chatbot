@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  export let isOpen: boolean = false;
   export let title: string;
   export let className: string = "";
+  // Internal open state: no caller controls it, the trigger and the backdrop
+  // toggle it.
+  let isOpen = false;
 
   const toogleModal = () => {
     isOpen = !isOpen;

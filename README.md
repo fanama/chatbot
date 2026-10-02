@@ -1,12 +1,12 @@
 # Chatbot
 
-RAG chatbot with a Svelte frontend and a Flask backend. Conversations are answered by a local Ollama model, with Google Gemini, OpenRouter and Mistral as ordered fallbacks. Documents (text, code, PDF) can be uploaded, chunked into a Chroma collection and retrieved as context.
+RAG chatbot with a Svelte frontend and a Flask backend. Conversations are answered by the first provider that responds, tried in order: Mistral, Google Gemini, OpenRouter, then a local Ollama model as the last resort. Documents (text, code, PDF) can be uploaded, chunked into a Chroma collection and retrieved as context.
 
 ## Features
 
 - Streaming responses over SSE with a working **Stop** button (real `AbortController`, partial answer kept)
 - RAG over a local Chroma collection: upload, chunk, search, delete
-- Answer resilience: if Ollama is down, the next configured cloud provider takes over
+- Answer resilience: providers are tried in order (Mistral -> Google -> OpenRouter -> Ollama) and a readable message comes back even when every one of them fails
 - Markdown rendering with code-block copy buttons, sanitized with DOMPurify
 - Text-to-speech for answers, speech-to-text for input
 - Lazy-loaded PDF viewer and tutorial video (not in the initial bundle)
@@ -71,8 +71,12 @@ RAG chatbot with a Svelte frontend and a Flask backend. Conversations are answer
    FLASK_DEBUG=1
    LOG_LEVEL=INFO
 
-   # --- Cloud fallbacks (optional, order matters) ---
+   # --- Providers (optional, tried in this order; Ollama is always last) ---
    MISTRAL_API_KEY=
+   # Optional, defaults to ministral-14b-latest. Use a model your Mistral plan
+   # actually has quota for: mistral-small-latest answered 429 rate_limited on
+   # a free-tier key while the ministral tier worked.
+   MISTRAL_MODEL=ministral-14b-latest
    GOOGLE_API_KEY=
    GOOGLE_MODEL=gemini-2.0-flash
    OPENROUTER_API_KEY=
@@ -208,11 +212,14 @@ a provider is skipped or a fallback kicks in.
 
 ## Configuration notes
 
-- **Provider order**: Ollama first, then Mistral, Google and OpenRouter. Only
-  the providers with a configured key are tried.
+- **Provider order**: Mistral, then Google, then OpenRouter, then local Ollama
+  last, so an answer does not depend on what the host machine can run. Only the
+  cloud providers with a configured key are tried (Ollama is always present as
+  the last resort). The first provider that produces text answers; if every one
+  fails, the API returns a readable message instead of an error.
 - **RAG**: when `useVectorstore` is enabled the retrieved chunks are merged into
   a single system prompt before the call.
-- **CORS is currently open** (`CORS(app)` in `server.py`). This is fine for local
+- **CORS is currently open** (`CORS(app)` in `backend/api/app.py`). This is fine for local
   development but should be restricted to the frontend origin before deploying.
 
 ## Development
@@ -224,6 +231,19 @@ bun run dev      # vite dev server
 uv run python server.py   # backend
 uv sync                   # add or update a Python dependency
 ```
+
+Project layout:
+
+| Path | Role |
+| --- | --- |
+| `server.py` | Thin entry point: logging + `create_app()` (`server:app` for gunicorn) |
+| `backend/api/app.py` | Flask application factory, static assets, CORS |
+| `backend/api/chat.py` | `/chat` and `/chat-sse` routes |
+| `backend/api/documents.py` | `/documents`, `/query`, `/initialize`, `/empty-documents` |
+| `backend/ai/` | Provider chain (Mistral -> Google -> OpenRouter -> Ollama) |
+| `backend/rag.py` | Retrieval context building shared by the routes and the tool |
+| `backend/vectorestore/` | Chroma client |
+| `src/domain`, `src/infra`, `src/lib`, `src/atoms` | Frontend layers: entities, integrations, features, UI |
 
 Python dependencies are declared in `pyproject.toml` and pinned in `uv.lock`.
 Do not `pip install` into `.venv`: the next `uv sync` would silently remove the

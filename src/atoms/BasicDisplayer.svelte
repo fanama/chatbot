@@ -3,7 +3,7 @@
   export let provider = "";
 </script>
 
-<!-- Mirrors the assistant bubble in Diplayer.svelte so the streamed answer and
+<!-- Mirrors the assistant bubble in Displayer.svelte so the streamed answer and
      the final message read as the same object instead of two designs. -->
 <div class="flex w-full items-start gap-3 md:gap-4">
   <span

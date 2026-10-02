@@ -7,7 +7,8 @@ interface Provider {
   name: string;
 }
 
-export class ProviderError extends Error {
+// Never imported elsewhere: it only marks failures raised inside this registry.
+class ProviderError extends Error {
   constructor(
     message: string,
     readonly cause?: unknown,

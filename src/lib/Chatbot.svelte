@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { MessageEntity } from "../domain/entities/message";
-  import Displayer from "../atoms/Diplayer.svelte";
+  import Displayer from "../atoms/Displayer.svelte";
   import { onMount, tick } from "svelte";
   import { AIProvider, isAbortError } from "../infra/ai/aiProvider";
   import {
@@ -14,7 +14,7 @@
 
   import VoiceInput from "../atoms/VoiceInput.svelte";
   import { Embedding } from "../infra/storage/embedding";
-  import BasicDiplayer from "../atoms/BasicDiplayer.svelte";
+  import BasicDisplayer from "../atoms/BasicDisplayer.svelte";
   import Uploader from "../atoms/Uploader.svelte";
   import Modal from "../atoms/Modal.svelte";
 
@@ -296,7 +296,7 @@
       {/each}
 
       {#if loading}
-        <BasicDiplayer message={streamContent} provider={streamProvider} />
+        <BasicDisplayer message={streamContent} provider={streamProvider} />
       {/if}
 
       {#if errorMessage}

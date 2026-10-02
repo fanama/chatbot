@@ -40,6 +40,21 @@ def extract_youtube_id(url: str) -> str:
     raise ValueError(f"Could not extract a YouTube video id from: {url}")
 
 
+_instance: "Youtube | None" = None
+
+
+def get_transcript() -> "Youtube":
+    """Return the shared helper, created on first use.
+
+    The `/query` route and the `query_collection_tool` tool both need it and
+    each used to keep its own duplicate singleton.
+    """
+    global _instance
+    if _instance is None:
+        _instance = Youtube()
+    return _instance
+
+
 class Youtube:
 
     @staticmethod
